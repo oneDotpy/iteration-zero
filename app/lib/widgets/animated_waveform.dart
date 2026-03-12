@@ -67,21 +67,24 @@ class _AnimatedWaveformState extends State<AnimatedWaveform> {
   @override
   Widget build(BuildContext context) {
     final heights = widget.isActive ? _frames[_frame] : _staticFrame;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: heights.asMap().entries.map((e) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          width: 3,
-          height: e.value,
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          decoration: BoxDecoration(
-            color: widget.color,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        );
-      }).toList(),
+    return SizedBox(
+      height: 32,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: heights.asMap().entries.map((e) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            width: 3,
+            height: e.value,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              color: widget.color,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 }

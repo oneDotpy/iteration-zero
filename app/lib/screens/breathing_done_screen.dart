@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'breather_intro_screen.dart';
-import 'caregiver_home_screen.dart';
-import 'patient_home_screen.dart';
 
 class BreathingDoneScreen extends StatelessWidget {
   final bool isCaregiver;
@@ -32,7 +30,7 @@ class BreathingDoneScreen extends StatelessWidget {
               const Spacer(flex: 2),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: FilledButton(
                   onPressed: () => Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -41,9 +39,8 @@ class BreathingDoneScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  style: OutlinedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    side: const BorderSide(color: Colors.black),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -59,19 +56,13 @@ class BreathingDoneScreen extends StatelessWidget {
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pushAndRemoveUntil(
+                child: FilledButton(
+                  onPressed: () => Navigator.popUntil(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => isCaregiver
-                          ? const CaregiverHomeScreen()
-                          : const PatientHomeScreen(),
-                    ),
-                    (route) => false,
+                    (route) => route.isFirst,
                   ),
-                  style: OutlinedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    side: const BorderSide(color: Colors.black),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

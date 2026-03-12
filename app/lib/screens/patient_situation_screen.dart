@@ -20,6 +20,11 @@ class PatientSituationScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+                padding: EdgeInsets.zero,
+              ),
               const SizedBox(height: 16),
               const Text(
                 "What's happening right now?",
@@ -31,7 +36,7 @@ class PatientSituationScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 14),
                   child: SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -40,12 +45,10 @@ class PatientSituationScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
+                      style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         backgroundColor: s.color,
-                        foregroundColor: s.index == 2
-                            ? Colors.white
-                            : Colors.black,
+                        foregroundColor: Colors.black,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -67,9 +70,9 @@ class PatientSituationScreen extends StatelessWidget {
                 children: [
                   _dot(filled: true),
                   const SizedBox(width: 8),
-                  _dot(),
+                  _dot(filled: true),
                   const SizedBox(width: 8),
-                  _dot(),
+                  _dot(filled: true),
                 ],
               ),
               const SizedBox(height: 8),

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../widgets/animated_waveform.dart';
-import 'patient_home_screen.dart';
 
 class PatientReassuranceScreen extends StatefulWidget {
   final int situationIndex;
@@ -54,11 +53,20 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+              const Spacer(),
               Text(
                 data.headline,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -68,61 +76,46 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
               const SizedBox(height: 12),
               Text(
                 data.subtext,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,
                   color: Colors.black54,
                   height: 1.3,
                 ),
               ),
-              const SizedBox(height: 48),
+              const Spacer(),
 
               // Play button
               Center(
-                child: GestureDetector(
-                  onTap: _togglePlay,
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 3),
-                    ),
-                    child: Icon(
-                      _isPlaying ? Icons.stop : Icons.play_arrow,
-                      size: 40,
+                child: Material(
+                  color: doneColor,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: _togglePlay,
+                    customBorder: const CircleBorder(),
+                    child: SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: Icon(
+                        _isPlaying ? Icons.stop : Icons.play_arrow,
+                        size: 40,
+                      ),
                     ),
                   ),
                 ),
               ),
 
-              if (_isPlaying) ...[
-                const SizedBox(height: 12),
-                const Center(
-                  child: Text(
-                    'Playing...',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black45,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ],
-
               const SizedBox(height: 24),
               AnimatedWaveform(isActive: _isPlaying),
 
-              const Spacer(),
+              const SizedBox(height: 24),
               Center(
                 child: SizedBox(
                   width: 160,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pushAndRemoveUntil(
+                    onPressed: () => Navigator.popUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const PatientHomeScreen(),
-                      ),
-                      (route) => false,
+                      (route) => route.settings.name == 'patientHome' || route.isFirst,
                     ),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),

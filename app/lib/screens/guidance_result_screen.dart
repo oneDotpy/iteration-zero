@@ -36,15 +36,14 @@ class GuidanceResultScreen extends StatelessWidget {
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: FilledButton(
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (_) => const GuidanceDoneScreen()),
                   ),
-                  style: OutlinedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    side: const BorderSide(color: Colors.black, width: 2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

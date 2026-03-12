@@ -62,14 +62,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: EdgeInsets.zero,
               ),
               const Spacer(flex: 1),
-              const Text(
-                'Log in',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              const Center(
+                child: Text(
+                  'Log in',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Connection, not correction.',
-                style: TextStyle(fontSize: 15, color: Colors.black45),
+              const Center(
+                child: Text(
+                  'Connection, not correction.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, color: Colors.black45),
+                ),
               ),
               const SizedBox(height: 40),
               _label('Email'),
@@ -104,6 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 12),
                 Text(
                   _errorMessage!,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.red, fontSize: 14),
                 ),
               ],

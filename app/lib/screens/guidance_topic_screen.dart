@@ -62,16 +62,15 @@ class GuidanceTopicScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton(
+                    child: FilledButton(
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => GuidanceResultScreen(topic: topic),
                         ),
                       ),
-                      style: OutlinedButton.styleFrom(
+                      style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        side: const BorderSide(color: Colors.black),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -92,9 +91,9 @@ class GuidanceTopicScreen extends StatelessWidget {
                 children: [
                   _dot(filled: true),
                   const SizedBox(width: 8),
-                  _dot(),
+                  _dot(filled: true),
                   const SizedBox(width: 8),
-                  _dot(),
+                  _dot(filled: true),
                 ],
               ),
               const SizedBox(height: 16),

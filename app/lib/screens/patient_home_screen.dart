@@ -105,16 +105,15 @@ class _PatientButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: OutlinedButton(
+      child: FilledButton(
         onPressed: onTap,
-        style: OutlinedButton.styleFrom(
+        style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 22),
-          side: const BorderSide(color: Colors.black, width: 1.5),
+          backgroundColor: Colors.grey[200],
+          foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          backgroundColor: Colors.grey[200],
-          foregroundColor: Colors.black,
         ),
         child: Text(label, style: const TextStyle(fontSize: 18)),
       ),

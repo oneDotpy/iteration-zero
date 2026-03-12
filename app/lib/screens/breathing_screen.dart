@@ -21,9 +21,12 @@ class _BreathingScreenState extends State<BreathingScreen>
   Timer? _phaseTimer;
 
   // Outer ring is fixed; inner circle animates between these sizes
-  static const _outerSize = 270.0;
-  static const _innerMin = 50.0;
-  static const _innerMax = 230.0;
+  static const _outerSize = 230.0;
+  static const _innerMin = 42.0;
+  static const _innerMax = _outerSize;
+  static const _holdPulseOutset = 5.0;
+  static const _pulseMaxSize = _innerMax + _holdPulseOutset;
+  static const _pulseCanvasSize = _pulseMaxSize;
 
   static const _phaseDurations = {
     _Phase.inhale: Duration(seconds: 4),
@@ -55,7 +58,24 @@ class _BreathingScreenState extends State<BreathingScreen>
       );
       _controller.forward(from: 0);
     } else if (phase == _Phase.hold) {
-      // Circle stays at max — no animation needed
+      final holdPeak = _innerMax + _holdPulseOutset;
+      _innerSizeAnim = TweenSequence<double>([
+        TweenSequenceItem(
+          tween: ConstantTween<double>(_innerMax),
+          weight: 0.6,
+        ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: _innerMax, end: holdPeak)
+                .chain(CurveTween(curve: Curves.easeInOutSine)),
+            weight: 1,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: holdPeak, end: _innerMax)
+                .chain(CurveTween(curve: Curves.easeInOutSine)),
+            weight: 1,
+          ),
+      ]).animate(_controller);
+      _controller.forward(from: 0);
     } else {
       _innerSizeAnim = Tween<double>(begin: _innerMax, end: _innerMin).animate(
         CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
@@ -113,86 +133,87 @@ class _BreathingScreenState extends State<BreathingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // Back button row
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                  padding: EdgeInsets.zero,
+                ),
               ),
-            ),
-            const Spacer(flex: 1),
-            Text(
-              _phaseLabel,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
+              const Spacer(flex: 1),
+              Text(
+                _phaseLabel,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const Spacer(flex: 1),
+              const Spacer(flex: 1),
 
-            // Breathing circle: outer ring + animated inner filled circle
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                final innerSize = _phase == _Phase.hold
-                    ? _innerMax
-                    : _innerSizeAnim.value;
-                return SizedBox(
-                  width: _outerSize,
-                  height: _outerSize,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Outer ring (fixed)
-                      Container(
-                        width: _outerSize,
-                        height: _outerSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF333333),
-                            width: 5,
+              // Breathing circle: outer ring + animated inner filled circle
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  final innerSize = _innerSizeAnim.value;
+                  return SizedBox(
+                    width: _pulseCanvasSize,
+                    height: _pulseCanvasSize,
+                    child: OverflowBox(
+                      maxWidth: _pulseCanvasSize,
+                      maxHeight: _pulseCanvasSize,
+                      alignment: Alignment.center,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: _outerSize,
+                            height: _outerSize,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black12,
+                            ),
                           ),
-                        ),
+                          Container(
+                            width: innerSize,
+                            height: innerSize,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF5C6BC0),
+                            ),
+                          ),
+                        ],
                       ),
-                      // Inner blue circle (animated)
-                      Container(
-                        width: innerSize,
-                        height: innerSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF5C6BC0).withValues(alpha: 0.65),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  );
+                },
+              ),
 
-            const Spacer(flex: 2),
-            // Cycle indicator dots
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (i) {
-                return Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: i < _cyclesCompleted + 1
-                        ? const Color(0xFF5C6BC0)
-                        : Colors.black12,
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: 32),
-          ],
+              const Spacer(flex: 2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (i) {
+                  return Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i < _cyclesCompleted + 1
+                          ? const Color(0xFF5C6BC0)
+                          : Colors.black12,
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );

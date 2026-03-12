@@ -220,14 +220,13 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton(
+                    child: FilledButton(
                       onPressed: () => setState(() =>
                           sel ? _selectedSituations.remove(i) : _selectedSituations.add(i)),
-                      style: OutlinedButton.styleFrom(
+                      style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: sel ? Colors.black : Colors.grey[200],
                         foregroundColor: sel ? Colors.white : Colors.black,
-                        side: const BorderSide(color: Colors.black),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
@@ -281,7 +280,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
             fontWeight: FontWeight.w500,
           ),
           backgroundColor: Colors.grey[200],
-          side: const BorderSide(color: Colors.black26),
+          side: BorderSide.none,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         );
       }).toList(),
@@ -369,31 +368,31 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              OutlinedButton.icon(
+              FilledButton.icon(
                 onPressed: _togglePreview,
                 icon: Icon(
                     _isPreviewPlaying ? Icons.stop : Icons.play_arrow,
                     size: 18),
                 label: Text(_isPreviewPlaying ? 'Stop' : 'Preview'),
-                style: OutlinedButton.styleFrom(
+                style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 10),
                   foregroundColor: Colors.black,
-                  side: const BorderSide(color: Colors.black54),
+                  backgroundColor: Colors.grey[300],
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               const SizedBox(width: 12),
-              OutlinedButton.icon(
+              FilledButton.icon(
                 onPressed: _reRecord,
                 icon: const Icon(Icons.mic, size: 18),
                 label: const Text('Re-record'),
-                style: OutlinedButton.styleFrom(
+                style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 10),
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.red,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),

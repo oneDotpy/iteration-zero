@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'screens/welcome_screen.dart';
 
 void main() {
@@ -22,3 +23,10 @@ class ConnectionApp extends StatelessWidget {
     );
   }
 }
+
+// Preview for the welcome screen
+@Preview(
+  name: 'Welcome Screen',
+  size: Size(300, 550),
+)
+Widget welcomePreview() => const ConnectionApp();

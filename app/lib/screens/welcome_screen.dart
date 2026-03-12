@@ -14,24 +14,18 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(flex: 3),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Get started',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w900,
-                    height: 1.1,
-                  ),
+              const Text(
+                'Get started',
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w900,
+                  height: 1.1,
                 ),
               ),
               const SizedBox(height: 12),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Connection, not correction.',
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
-                ),
+              const Text(
+                'Connection, not correction.',
+                style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               const Spacer(flex: 2),
               Row(
@@ -39,30 +33,42 @@ class WelcomeScreen extends StatelessWidget {
                 children: [
                   _dot(filled: true),
                   const SizedBox(width: 8),
-                  _dot(),
+                  _dot(filled: true),
                   const SizedBox(width: 8),
-                  _dot(),
+                  _dot(filled: true),
                 ],
               ),
               const Spacer(flex: 2),
               _AppButton(
                 label: 'Create an account',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const LoginScreen(),
-                  ),
-                ),
+                onTap: () async {
+                  try {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                    );
+                  } catch (_) {
+                    // Optionally handle navigation errors.
+                  }
+                },
               ),
               const SizedBox(height: 12),
               _AppButton(
                 label: 'Log in',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const LoginScreen(),
-                  ),
-                ),
+                onTap: () async {
+                  try {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                    );
+                  } catch (_) {
+                    // Optionally handle navigation errors.
+                  }
+                },
               ),
               const SizedBox(height: 16),
             ],
@@ -93,12 +99,11 @@ class _AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
+      width: 200, // Set specific width instead of full width
+      child: FilledButton(
         onPressed: onTap,
-        style: OutlinedButton.styleFrom(
+        style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 18),
-          side: const BorderSide(color: Colors.black, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

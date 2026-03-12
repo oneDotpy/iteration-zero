@@ -156,14 +156,15 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                     : ListView.separated(
                         itemCount: patients.length,
                         separatorBuilder: (context, index) =>
-                            const Divider(height: 1, color: Colors.black12),
+                            const SizedBox(height: 5),
                         itemBuilder: (_, i) {
                           final p = patients[i];
                           return ListTile(
+                            tileColor: Colors.grey[200],
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 4, vertical: 4),
                             leading: CircleAvatar(
-                              backgroundColor: Colors.grey[200],
+                              backgroundColor: Colors.white,
                               child: Text(
                                 p.name.isNotEmpty
                                     ? p.name[0].toUpperCase()
@@ -186,8 +187,11 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                                         color: Colors.black45, fontSize: 13),
                                   )
                                 : null,
-                            trailing: const Icon(Icons.edit_outlined,
-                                color: Colors.black38, size: 20),
+                            trailing: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Icon(Icons.edit_outlined,
+                                  color: Colors.black38, size: 20),
+                            ),
                             onTap: () => _showEditDialog(p),
                           );
                         },
@@ -196,14 +200,14 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: FilledButton.icon(
                   onPressed: _showAddDialog,
                   icon: const Icon(Icons.person_add_outlined),
                   label: const Text('Add patient'),
-                  style: OutlinedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.grey[200],
                     foregroundColor: Colors.black,
-                    side: const BorderSide(color: Colors.black),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

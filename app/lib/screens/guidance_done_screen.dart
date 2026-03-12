@@ -26,7 +26,7 @@ class GuidanceDoneScreen extends StatelessWidget {
               const Spacer(flex: 2),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: FilledButton(
                   onPressed: () {
                     // Pop back to caregiver home, then push fresh guidance
                     Navigator.of(context).popUntil((r) => r.isFirst);
@@ -35,9 +35,8 @@ class GuidanceDoneScreen extends StatelessWidget {
                           builder: (_) => const GuidanceTopicScreen()),
                     );
                   },
-                  style: OutlinedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    side: const BorderSide(color: Colors.black),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     backgroundColor: Colors.grey[200],
@@ -50,12 +49,11 @@ class GuidanceDoneScreen extends StatelessWidget {
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: FilledButton(
                   onPressed: () =>
                       Navigator.of(context).popUntil((r) => r.isFirst),
-                  style: OutlinedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    side: const BorderSide(color: Colors.black),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     backgroundColor: Colors.grey[200],
