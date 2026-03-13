@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
+  String _errorMessage = '';
 
   @override
   void dispose() {
@@ -29,7 +30,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login() {
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _errorMessage = '';
+    });
 
     Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
@@ -40,16 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _loading = false);
 
       if (role == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Invalid email or password.'),
-            backgroundColor: Colors.redAccent.shade200,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+        setState(() => _errorMessage = 'Incorrect email or password. Please try again.');
         return;
       }
 
@@ -136,6 +131,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 label: 'Email',
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                onChanged: (_) {
+                  if (_errorMessage.isNotEmpty) setState(() => _errorMessage = '');
+                },
               ),
 
               const SizedBox(height: 18),
@@ -229,17 +227,37 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: colors.primary,
                     ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-              // Demo hint
-              Text(
-                'Demo: caregiver@gmail.com / caregiver',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colors.textMed.withValues(alpha: 0.7),
+              // Inline error
+              if (_errorMessage.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.redAccent.withValues(alpha: 0.30),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline_rounded,
+                          color: Colors.redAccent, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
 
               const SizedBox(height: 16),
 

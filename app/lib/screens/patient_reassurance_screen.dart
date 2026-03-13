@@ -1,7 +1,6 @@
 // lib/screens/patient_reassurance_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
 import '../app_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/animated_waveform.dart';
@@ -18,8 +17,7 @@ class PatientReassuranceScreen extends StatefulWidget {
 
 class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   bool _isPlaying = false;
-  final _player = AudioPlayer();
-  StreamSubscription? _completionSub;
+  Timer? _playTimer;
 
   static const _situationBgColors = [
     AppColors.situationTime,
@@ -35,39 +33,24 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
     AppColors.caregiverPrimary,
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _completionSub = _player.onPlayerComplete.listen((_) {
+  void _togglePlay(ReassuranceData data) {
+    if (_isPlaying) {
+      _playTimer?.cancel();
+      setState(() => _isPlaying = false);
+      return;
+    }
+    setState(() => _isPlaying = true);
+    final dur = data.recordingDurationSeconds > 0
+        ? Duration(seconds: data.recordingDurationSeconds)
+        : const Duration(seconds: 4);
+    _playTimer = Timer(dur, () {
       if (mounted) setState(() => _isPlaying = false);
     });
   }
 
-  Future<void> _togglePlay(ReassuranceData data) async {
-    if (_isPlaying) {
-      await _player.stop();
-      setState(() => _isPlaying = false);
-      return;
-    }
-    if (data.recordingPath == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('No voice message recorded yet.'),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      return;
-    }
-    setState(() => _isPlaying = true);
-    await _player.play(DeviceFileSource(data.recordingPath!));
-  }
-
   @override
   void dispose() {
-    _completionSub?.cancel();
-    _player.dispose();
+    _playTimer?.cancel();
     super.dispose();
   }
 
@@ -122,7 +105,7 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              if (data.hasRecording && data.recordingPath != null) ...[
+              if (data.hasRecording) ...[
                 GestureDetector(
                   onTap: () => _togglePlay(data),
                   child: Container(

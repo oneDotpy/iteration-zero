@@ -78,6 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               v ? ThemeMode.dark : ThemeMode.light;
                           AppSettings.themeMode = themeNotifier.value;
                         });
+                        settingsNotifier.value++;
                       },
                       activeThumbColor: colors.primary,
                     ),
@@ -92,29 +93,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         _TextSizeButton(
                           label: 'A',
-                          fontSize: 12,
-                          isSelected: !AppSettings.largeTextMode,
+                          fontSize: 13,
+                          isSelected: AppSettings.textScale == 1.0,
                           color: colors.primary,
-                          onTap: () => setState(
-                              () => AppSettings.largeTextMode = false),
+                          onTap: () {
+                            setState(() => AppSettings.textScale = 1.0);
+                            settingsNotifier.value++;
+                          },
                         ),
                         const SizedBox(width: 6),
                         _TextSizeButton(
                           label: 'A',
-                          fontSize: 15,
-                          isSelected: AppSettings.largeTextMode,
+                          fontSize: 16,
+                          isSelected: AppSettings.textScale == 1.2,
                           color: colors.primary,
-                          onTap: () =>
-                              setState(() => AppSettings.largeTextMode = true),
+                          onTap: () {
+                            setState(() => AppSettings.textScale = 1.2);
+                            settingsNotifier.value++;
+                          },
                         ),
                         const SizedBox(width: 6),
                         _TextSizeButton(
                           label: 'A',
-                          fontSize: 18,
-                          isSelected: false,
+                          fontSize: 19,
+                          isSelected: AppSettings.textScale == 1.4,
                           color: colors.primary,
-                          onTap: () =>
-                              setState(() => AppSettings.largeTextMode = true),
+                          onTap: () {
+                            setState(() => AppSettings.textScale = 1.4);
+                            settingsNotifier.value++;
+                          },
                         ),
                       ],
                     ),
@@ -126,8 +133,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'High Contrast',
                     trailing: Switch(
                       value: AppSettings.highContrastMode,
-                      onChanged: (v) =>
-                          setState(() => AppSettings.highContrastMode = v),
+                      onChanged: (v) {
+                        setState(() => AppSettings.highContrastMode = v);
+                        settingsNotifier.value++;
+                      },
                       activeThumbColor: colors.primary,
                     ),
                   ),
@@ -138,8 +147,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'Reduced Motion',
                     trailing: Switch(
                       value: AppSettings.reducedMotion,
-                      onChanged: (v) =>
-                          setState(() => AppSettings.reducedMotion = v),
+                      onChanged: (v) {
+                        setState(() => AppSettings.reducedMotion = v);
+                        settingsNotifier.value++;
+                      },
                       activeThumbColor: colors.primary,
                     ),
                   ),
@@ -334,9 +345,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _SettingsInfoRow(
                     icon: Icons.email_outlined,
                     label: 'Email',
-                    value: widget.isCaregiver
-                        ? AppState.caregiverEmail
-                        : AppState.patientEmail,
+                    value: AppState.loggedInEmail,
                   ),
                   Padding(
                     padding: const EdgeInsets.all(16),

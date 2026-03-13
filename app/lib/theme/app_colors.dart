@@ -1,5 +1,6 @@
 // lib/theme/app_colors.dart
 import 'package:flutter/material.dart';
+import '../app_state.dart';
 
 class AppColors {
   final Color background;
@@ -86,6 +87,25 @@ class AppColors {
         situationConfusedBg: Color(0xFF162230),
       );
 
+  static AppColors highContrast() => const AppColors(
+        background: Color(0xFFFFFFFF),
+        surface: Color(0xFFFFFFFF),
+        surfaceAlt: Color(0xFFEEEEEE),
+        primary: Color(0xFF004E8C),
+        primaryLight: Color(0xFFCCE5FF),
+        rose: Color(0xFF8B0000),
+        roseLight: Color(0xFFFFE0E0),
+        sage: Color(0xFF1A5C1E),
+        textHigh: Color(0xFF000000),
+        textMed: Color(0xFF1A1A1A),
+        textLow: Color(0xFF444444),
+        border: Color(0xFF000000),
+        situationTimeBg: Color(0xFFFFE680),
+        situationLocationBg: Color(0xFFB8E0B8),
+        situationPersonBg: Color(0xFFD9B8E8),
+        situationConfusedBg: Color(0xFFB8D8F0),
+      );
+
   // ── Backwards-compat static constants (light values) ──────────────────────
   // Referenced by the protected screens that must not be modified.
   static const caregiverPrimary = Color(0xFF7BA7BC);
@@ -115,7 +135,10 @@ class AppColors {
 }
 
 extension AppColorsX on BuildContext {
-  AppColors get appColors => Theme.of(this).brightness == Brightness.dark
-      ? AppColors.dark()
-      : AppColors.light();
+  AppColors get appColors {
+    if (AppSettings.highContrastMode) return AppColors.highContrast();
+    return Theme.of(this).brightness == Brightness.dark
+        ? AppColors.dark()
+        : AppColors.light();
+  }
 }

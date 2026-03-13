@@ -10,7 +10,7 @@ A Flutter prototype for a caregiver support app, built for CSC318. The app has t
 
 ### Caregiver side
 - **Get some guidance** — browse topics (sundowning, wandering, repetitive questions, etc.) and read evidence-based guidance. A done screen ("Happy to help.") lets you get more guidance or return home.
-- **Send reassurance** — compose a headline, subtext, and simulated voice recording for a specific patient and situation. Supports multiple patients and multiple situation types per message.
+- **Send reassurance** — compose a headline, subtext, and simulated voice recording for a specific patient and situation. Supports multiple patients and multiple situation types per message. After saving, the form clears and shows a "Reassurance sent!" confirmation with an option to send another.
 - **Take a breather** — a 3-cycle guided breathing exercise with an animated inner circle (inhale → hold → exhale). Progress dots track cycles; a done screen offers to continue or finish.
 - **Manage patients** — add, edit, and remove patients from your care list. Each patient gets their own reassurance message store.
 
@@ -20,8 +20,9 @@ A Flutter prototype for a caregiver support app, built for CSC318. The app has t
 - **Take a breather** — same guided breathing exercise as the caregiver side.
 
 ### Shared features
-- Simulated voice input bar on home screens and the "I feel unsure" screen — tap to enter listening mode, see a live timer and animated waveform, tap Done or wait 10 s.
+- Simulated voice input bar on home screens and the "I feel unsure" screen — tap to enter listening mode, see a live timer and animated waveform, tap Done or wait 10 s. Shows "Got it!" confirmation before returning to idle.
 - Sign up (caregiver or patient role) or log in — accounts persist for the app session.
+- **Settings** — dark mode, high contrast, text size (S/M/L), reduced motion. All settings take effect immediately app-wide.
 
 ---
 
@@ -43,8 +44,8 @@ iteration-zero/
 ├── Paper Prototype/        # Original paper prototype PNGs
 └── app/                    # Flutter project
     └── lib/
-        ├── main.dart
-        ├── app_state.dart              # All static app state & auth
+        ├── main.dart                   # App entry; themeNotifier + settingsNotifier
+        ├── app_state.dart              # All static app state, auth & AppSettings
         ├── screens/
         │   ├── welcome_screen.dart
         │   ├── login_screen.dart
@@ -63,8 +64,14 @@ iteration-zero/
         │   ├── breathing_done_screen.dart
         │   ├── patient_situation_screen.dart
         │   └── patient_reassurance_screen.dart
+        ├── theme/
+        │   ├── app_colors.dart         # Light / dark / high-contrast palettes
+        │   └── app_theme.dart          # ThemeData builders
         └── widgets/
-            ├── animated_waveform.dart  # Animated bar waveform widget
+            ├── animated_waveform.dart  # Animated bar waveform (respects reduced motion)
+            ├── breathing_circle.dart   # Animated breathing circle widget
+            ├── soft_card.dart
+            ├── soft_text_field.dart
             └── voice_input_bar.dart    # Tappable voice input simulation
 ```
 
@@ -130,3 +137,4 @@ Output is in `app/build/web/` — open `index.html` in any browser.
 - This is a **prototype** — there is no real backend or database. All state lives in memory and resets when the app is closed.
 - Voice recording and playback are **simulated** — no audio is actually captured or stored.
 - The breathing exercise is limited to **3 cycles** by design.
+- **Accessibility settings** apply immediately app-wide via `settingsNotifier` (a `ValueNotifier<int>`) that triggers a full widget tree rebuild. Text scaling uses Flutter's `MediaQuery.textScaler`; high contrast swaps the entire `AppColors` palette; reduced motion disables animated waveforms and the breathing circle animation.

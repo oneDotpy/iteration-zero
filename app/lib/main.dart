@@ -5,6 +5,9 @@ import 'app_state.dart';
 import 'screens/welcome_screen.dart';
 
 final themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
+/// Increment this whenever a setting (other than theme) changes to force a
+/// full app rebuild so MediaQuery / AppColors re-reads AppSettings values.
+final settingsNotifier = ValueNotifier<int>(0);
 
 void main() {
   runApp(const UnscriptedApp());
@@ -19,13 +22,26 @@ class UnscriptedApp extends StatelessWidget {
       valueListenable: themeNotifier,
       builder: (context, mode, _) {
         AppSettings.themeMode = mode;
-        return MaterialApp(
-          title: '[un]scripted',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light(),
-          darkTheme: AppTheme.dark(),
-          themeMode: mode,
-          home: const WelcomeScreen(),
+        return ValueListenableBuilder<int>(
+          valueListenable: settingsNotifier,
+          builder: (context, settingsCount, settingsChild) {
+            return MaterialApp(
+              title: '[un]scripted',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light(),
+              darkTheme: AppTheme.dark(),
+              themeMode: mode,
+              home: const WelcomeScreen(),
+              builder: (context, child) {
+                return MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: TextScaler.linear(AppSettings.textScale),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+          },
         );
       },
     );

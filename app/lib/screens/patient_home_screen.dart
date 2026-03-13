@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/primary_cta_button.dart';
+import '../widgets/voice_input_bar.dart';
 import 'patient_situation_screen.dart';
 import 'patient_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
@@ -69,7 +70,7 @@ class PatientHomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                AppState.patientName,
+                AppState.loggedInName.isNotEmpty ? AppState.loggedInName : AppState.patientName,
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.w800,
@@ -157,6 +158,11 @@ class PatientHomeScreen extends StatelessWidget {
                 ),
                 color: colors.sage,
               ),
+
+              const SizedBox(height: 20),
+
+              // Voice input bar
+              VoiceInputBar(color: colors.rose),
 
               const Spacer(),
 

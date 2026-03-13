@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 
 enum BreathPhase { inhale, hold, exhale }
 
-class BreathingCircle extends StatelessWidget {
+class BreathingCircle extends StatefulWidget {
   final BreathPhase phase;
   final Color primaryColor;
   final bool reducedMotion;
 
-  static const double _outerSize = 270.0;
-  static const double _innerMin = 50.0;
-  static const double _innerMax = 230.0;
+  static const double outerSize = 270.0;
+  static const double innerMin = 50.0;
+  static const double innerMax = 230.0;
 
   const BreathingCircle({
     super.key,
@@ -19,21 +19,41 @@ class BreathingCircle extends StatelessWidget {
     this.reducedMotion = false,
   });
 
+  @override
+  State<BreathingCircle> createState() => _BreathingCircleState();
+}
+
+class _BreathingCircleState extends State<BreathingCircle> {
+  // Start false so the inner circle renders at innerMin on first frame,
+  // then animates to the correct size after the first frame is drawn.
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _ready = true);
+    });
+  }
+
   double get _targetInnerSize {
-    if (reducedMotion) return (_innerMin + _innerMax) / 2;
-    switch (phase) {
+    if (!_ready) return BreathingCircle.innerMin;
+    if (widget.reducedMotion) {
+      return (BreathingCircle.innerMin + BreathingCircle.innerMax) / 2;
+    }
+    switch (widget.phase) {
       case BreathPhase.inhale:
-        return _innerMax;
+        return BreathingCircle.innerMax;
       case BreathPhase.hold:
-        return _innerMax;
+        return BreathingCircle.innerMax;
       case BreathPhase.exhale:
-        return _innerMin;
+        return BreathingCircle.innerMin;
     }
   }
 
   Duration get _animDuration {
-    if (reducedMotion) return Duration.zero;
-    switch (phase) {
+    if (widget.reducedMotion) return Duration.zero;
+    switch (widget.phase) {
       case BreathPhase.inhale:
         return const Duration(seconds: 4);
       case BreathPhase.hold:
@@ -45,38 +65,41 @@ class BreathingCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = widget.primaryColor;
+    const outer = BreathingCircle.outerSize;
+
     return SizedBox(
-      width: _outerSize,
-      height: _outerSize,
+      width: outer,
+      height: outer,
       child: Stack(
         alignment: Alignment.center,
         children: [
           // Outer ring (fixed, faint)
           Container(
-            width: _outerSize,
-            height: _outerSize,
+            width: outer,
+            height: outer,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: primaryColor.withValues(alpha: 0.20),
+                color: color.withValues(alpha: 0.20),
                 width: 2,
               ),
             ),
           ),
-          // Middle soft ring (slow pulse effect)
+          // Middle soft ring
           AnimatedContainer(
-            duration: reducedMotion
+            duration: widget.reducedMotion
                 ? Duration.zero
                 : const Duration(seconds: 3),
             curve: Curves.easeInOut,
-            width: _outerSize - 24,
-            height: _outerSize - 24,
+            width: outer - 24,
+            height: outer - 24,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: primaryColor.withValues(alpha: 0.07),
+              color: color.withValues(alpha: 0.07),
             ),
           ),
-          // Inner animated circle
+          // Inner animated circle — starts small, expands on first frame
           AnimatedContainer(
             duration: _animDuration,
             curve: Curves.easeInOut,
@@ -84,7 +107,7 @@ class BreathingCircle extends StatelessWidget {
             height: _targetInnerSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: primaryColor.withValues(alpha: 0.55),
+              color: color.withValues(alpha: 0.55),
             ),
           ),
         ],

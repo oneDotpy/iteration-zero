@@ -1,9 +1,6 @@
 // lib/screens/send_reassurance_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:record/record.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:path_provider/path_provider.dart';
 import '../app_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/soft_card.dart';
@@ -25,20 +22,18 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
   // Patient selector
   final Set<String> _selectedPatientIds = {AppState.defaultPatientId};
 
-  // Voice recording
+  // Voice recording (simulated)
   bool _addVoice = false;
   _RecordingState _recordingState = _RecordingState.idle;
   int _recordingSeconds = 0;
   Timer? _recordingTimer;
   bool _isPreviewPlaying = false;
-  String? _recordingPath;
-
-  final _recorder = AudioRecorder();
-  final _previewPlayer = AudioPlayer();
-  StreamSubscription? _previewCompletionSub;
+  Timer? _previewTimer;
 
   // Situation selector
   final Set<int> _selectedSituations = {};
+
+  bool _sent = false;
 
   static const _situations = [
     'Unsure about time',
@@ -54,59 +49,44 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     AppColors.situationConfused,
   ];
 
-  Future<void> _startRecording() async {
-    final hasPermission = await _recorder.hasPermission();
-    if (!hasPermission) {
-      _snack('Microphone permission denied. Please allow it in Settings.');
-      return;
-    }
-    final dir = await getApplicationDocumentsDirectory();
-    final path =
-        '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
-    await _recorder.start(
-      const RecordConfig(encoder: AudioEncoder.aacLc),
-      path: path,
-    );
+  void _startRecording() {
     setState(() {
       _recordingState = _RecordingState.recording;
       _recordingSeconds = 0;
     });
     _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
+      if (_recordingSeconds >= 10) {
+        _stopRecording();
+        return;
+      }
       setState(() => _recordingSeconds++);
     });
   }
 
-  Future<void> _stopRecording() async {
+  void _stopRecording() {
     _recordingTimer?.cancel();
-    final path = await _recorder.stop();
-    setState(() {
-      _recordingState = _RecordingState.saved;
-      _recordingPath = path;
-    });
+    setState(() => _recordingState = _RecordingState.saved);
   }
 
-  Future<void> _reRecord() async {
-    await _previewPlayer.stop();
+  void _reRecord() {
+    _previewTimer?.cancel();
     setState(() {
       _recordingState = _RecordingState.idle;
       _recordingSeconds = 0;
       _isPreviewPlaying = false;
-      _recordingPath = null;
     });
   }
 
-  Future<void> _togglePreview() async {
+  void _togglePreview() {
     if (_isPreviewPlaying) {
-      await _previewPlayer.stop();
+      _previewTimer?.cancel();
       setState(() => _isPreviewPlaying = false);
       return;
     }
-    if (_recordingPath == null) return;
     setState(() => _isPreviewPlaying = true);
-    await _previewPlayer.play(DeviceFileSource(_recordingPath!));
-    _previewCompletionSub?.cancel();
-    _previewCompletionSub = _previewPlayer.onPlayerComplete.listen((_) {
+    final duration = Duration(seconds: _recordingSeconds.clamp(1, 10));
+    _previewTimer = Timer(duration, () {
       if (mounted) setState(() => _isPreviewPlaying = false);
     });
   }
@@ -127,10 +107,26 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
       subtext: _subtextController.text,
       hasRecording: _recordingState == _RecordingState.saved,
       recordingDurationSeconds: _recordingSeconds,
-      recordingPath: _recordingPath,
     );
-    _snack('Reassurance saved!');
-    Navigator.pop(context);
+    _recordingTimer?.cancel();
+    _previewTimer?.cancel();
+    _headlineController.clear();
+    _subtextController.clear();
+    setState(() {
+      _sent = true;
+      _selectedPatientIds
+        ..clear()
+        ..add(AppState.defaultPatientId);
+      _selectedSituations.clear();
+      _addVoice = false;
+      _recordingState = _RecordingState.idle;
+      _recordingSeconds = 0;
+      _isPreviewPlaying = false;
+    });
+  }
+
+  void _resetForm() {
+    setState(() => _sent = false);
   }
 
   void _snack(String msg) {
@@ -147,9 +143,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
   @override
   void dispose() {
     _recordingTimer?.cancel();
-    _previewCompletionSub?.cancel();
-    _recorder.dispose();
-    _previewPlayer.dispose();
+    _previewTimer?.cancel();
     _headlineController.dispose();
     _subtextController.dispose();
     super.dispose();
@@ -287,12 +281,10 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                         _addVoice = !_addVoice;
                         if (!_addVoice) {
                           _recordingTimer?.cancel();
-                          _recorder.stop();
-                          _previewPlayer.stop();
+                          _previewTimer?.cancel();
                           _recordingState = _RecordingState.idle;
                           _recordingSeconds = 0;
                           _isPreviewPlaying = false;
-                          _recordingPath = null;
                         }
                       }),
                       child: Row(
@@ -417,28 +409,72 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
               const SizedBox(height: 24),
 
-              // Save button
-              GestureDetector(
-                onTap: _save,
-                child: Container(
+              // Save button / confirmation
+              if (_sent) ...[
+                Container(
                   width: double.infinity,
                   constraints: const BoxConstraints(minHeight: 60),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.caregiverPrimary,
+                    color: AppColors.sageGreen,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [AppColors.cardShadow],
                   ),
-                  child: const Text(
-                    'Save message',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle_outline_rounded,
+                          color: Colors.white, size: 22),
+                      SizedBox(width: 10),
+                      Text(
+                        'Reassurance sent!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: _resetForm,
+                  child: const Center(
+                    child: Text(
+                      'Send another message',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.caregiverPrimary,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppColors.caregiverPrimary,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ] else
+                GestureDetector(
+                  onTap: _save,
+                  child: Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(minHeight: 60),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.caregiverPrimary,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [AppColors.cardShadow],
+                    ),
+                    child: const Text(
+                      'Save message',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
 
               const SizedBox(height: 32),
             ],

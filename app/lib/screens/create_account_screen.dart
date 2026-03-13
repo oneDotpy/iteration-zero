@@ -6,6 +6,7 @@ import '../widgets/soft_card.dart';
 import '../widgets/soft_text_field.dart';
 import '../widgets/primary_cta_button.dart';
 import 'caregiver_home_screen.dart';
+import 'patient_home_screen.dart';
 import 'login_screen.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
+  String _role = 'caregiver'; // 'caregiver' or 'patient'
 
   @override
   void dispose() {
@@ -33,6 +35,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   void _createAccount() {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final name = _nameController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,22 +57,20 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       if (!mounted) return;
       setState(() => _loading = false);
 
-      // Try demo login first; if not demo creds, treat as new caregiver account
-      final role = AppState.login(email, password);
+      final role = AppState.register(
+        email: email,
+        password: password,
+        name: name,
+        role: _role,
+      );
 
-      if (role == 'patient') {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const CaregiverHomeScreen()),
-          (route) => false,
-        );
-        return;
-      }
-
-      // Default: navigate to caregiver home for new accounts
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const CaregiverHomeScreen()),
+        MaterialPageRoute(
+          builder: (_) => role == 'patient'
+              ? const PatientHomeScreen()
+              : const CaregiverHomeScreen(),
+        ),
         (route) => false,
       );
     });
@@ -135,6 +136,101 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               ),
 
               const SizedBox(height: 32),
+
+              // Role selector
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _role = 'caregiver'),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: _role == 'caregiver'
+                              ? colors.primary
+                              : colors.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: _role == 'caregiver'
+                                ? colors.primary
+                                : colors.border,
+                          ),
+                          boxShadow: [colors.shadow],
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.shield_outlined,
+                              color: _role == 'caregiver'
+                                  ? Colors.white
+                                  : colors.textMed,
+                              size: 22,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Caregiver',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: _role == 'caregiver'
+                                    ? Colors.white
+                                    : colors.textMed,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _role = 'patient'),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: _role == 'patient'
+                              ? colors.rose
+                              : colors.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: _role == 'patient'
+                                ? colors.rose
+                                : colors.border,
+                          ),
+                          boxShadow: [colors.shadow],
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.favorite_border_rounded,
+                              color: _role == 'patient'
+                                  ? Colors.white
+                                  : colors.textMed,
+                              size: 22,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Patient',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: _role == 'patient'
+                                    ? Colors.white
+                                    : colors.textMed,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
 
               // Form card
               SoftCard(

@@ -4,6 +4,7 @@ import '../app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/soft_card.dart';
 import '../widgets/dashboard_action_card.dart';
+import '../widgets/voice_input_bar.dart';
 import 'guidance_topic_screen.dart';
 import 'send_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
@@ -43,7 +44,7 @@ class CaregiverHomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hi, ${AppState.caregiverName}',
+                          'Hi, ${AppState.loggedInName.isNotEmpty ? AppState.loggedInName : AppState.caregiverName}',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
@@ -299,6 +300,11 @@ class CaregiverHomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
               ],
+
+              // ── Voice input bar ───────────────────────────────────────────
+              VoiceInputBar(color: colors.primary),
+
+              const SizedBox(height: 16),
 
               // ── Caregiver mode badge ──────────────────────────────────────
               Center(

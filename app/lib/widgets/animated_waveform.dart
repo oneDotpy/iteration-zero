@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../app_state.dart';
 
 class AnimatedWaveform extends StatefulWidget {
   final bool isActive;
@@ -38,6 +39,10 @@ class _AnimatedWaveformState extends State<AnimatedWaveform> {
   @override
   void didUpdateWidget(AnimatedWaveform old) {
     super.didUpdateWidget(old);
+    if (AppSettings.reducedMotion) {
+      _stopAnimation();
+      return;
+    }
     if (widget.isActive && !old.isActive) {
       _startAnimation();
     } else if (!widget.isActive && old.isActive) {
@@ -47,6 +52,7 @@ class _AnimatedWaveformState extends State<AnimatedWaveform> {
 
   void _startAnimation() {
     _timer?.cancel();
+    if (AppSettings.reducedMotion) return;
     _timer = Timer.periodic(const Duration(milliseconds: 180), (_) {
       if (mounted) setState(() => _frame = (_frame + 1) % _frames.length);
     });

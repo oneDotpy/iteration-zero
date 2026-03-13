@@ -1,6 +1,7 @@
 // lib/screens/patient_situation_screen.dart
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../widgets/voice_input_bar.dart';
 import 'patient_reassurance_screen.dart';
 
 class PatientSituationScreen extends StatelessWidget {
@@ -145,6 +146,11 @@ class PatientSituationScreen extends StatelessWidget {
               ),
 
               const Spacer(),
+
+              // Voice input bar
+              VoiceInputBar(color: colors.rose),
+
+              const SizedBox(height: 8),
             ],
           ),
         ),
