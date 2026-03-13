@@ -75,7 +75,7 @@ class CaregiverHomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _HomeButton(
-                label: 'Manage patients',
+                label: 'Patients',
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(

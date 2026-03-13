@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import 'manage_patients_profile_screen.dart';
 
 class ManagePatientsScreen extends StatefulWidget {
   const ManagePatientsScreen({super.key});
@@ -180,19 +181,25 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                               style: const TextStyle(
                                   fontWeight: FontWeight.w600, fontSize: 16),
                             ),
-                            subtitle: p.notes.isNotEmpty
-                                ? Text(
-                                    p.notes,
-                                    style: const TextStyle(
-                                        color: Colors.black45, fontSize: 13),
-                                  )
-                                : null,
-                            trailing: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Icon(Icons.edit_outlined,
-                                  color: Colors.black38, size: 20),
+                            trailing: IconButton(
+                              onPressed: () => _showEditDialog(p),
+                              icon: const Icon(
+                                Icons.edit_outlined,
+                                color: Colors.black38,
+                                size: 20,
+                              ),
                             ),
-                            onTap: () => _showEditDialog(p),
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ManagePatientsProfileScreen(
+                                    patient: p,
+                                  ),
+                                ),
+                              );
+                              if (mounted) setState(() {});
+                            },
                           );
                         },
                       ),
