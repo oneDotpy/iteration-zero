@@ -40,16 +40,21 @@ class GuidanceTopicScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFE8FFD9),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
+              IconButton.filled(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFABEB96),
+                  foregroundColor: Colors.black,
+                ),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -74,7 +79,7 @@ class GuidanceTopicScreen extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        backgroundColor: Colors.grey[200],
+                        backgroundColor: const Color(0xFFABEB96),
                         foregroundColor: Colors.black,
                       ),
                       child: Text(
@@ -110,7 +115,7 @@ class GuidanceTopicScreen extends StatelessWidget {
       height: 8,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: filled ? Colors.black : Colors.black26,
+        color: filled ? const Color(0xFFABEB96) : Colors.black26,
       ),
     );
   }

@@ -10,7 +10,7 @@ class WelcomeScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -42,6 +42,8 @@ class WelcomeScreen extends StatelessWidget {
               const Spacer(flex: 2),
               _AppButton(
                 label: 'Create an account',
+                backgroundColor: const Color(0xFFFFF8D9),
+                foregroundColor: Colors.black,
                 onTap: () async {
                   try {
                     await Navigator.push(
@@ -58,6 +60,8 @@ class WelcomeScreen extends StatelessWidget {
               const SizedBox(height: 12),
               _AppButton(
                 label: 'Log in',
+                backgroundColor: Color(0xFFFFDD8F),
+                foregroundColor: Colors.black,
                 onTap: () async {
                   try {
                     await Navigator.push(
@@ -85,7 +89,7 @@ class WelcomeScreen extends StatelessWidget {
       height: 8,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: filled ? Colors.black : Colors.black26,
+        color: filled ? Color(0xFFFFDD8F) : Colors.black26,
       ),
     );
   }
@@ -94,8 +98,15 @@ class WelcomeScreen extends StatelessWidget {
 class _AppButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
+  final Color backgroundColor;
+  final Color foregroundColor;
 
-  const _AppButton({required this.label, required this.onTap});
+  const _AppButton({
+    required this.label,
+    required this.onTap,
+    required this.backgroundColor,
+    required this.foregroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -108,8 +119,8 @@ class _AppButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          backgroundColor: Colors.grey[200],
-          foregroundColor: Colors.black,
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
         ),
         child: Text(label, style: const TextStyle(fontSize: 16)),
       ),

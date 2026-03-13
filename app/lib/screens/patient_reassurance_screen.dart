@@ -17,10 +17,17 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   Timer? _playTimer;
 
   static const _doneColors = [
-    Color(0xFFFFF3CD), // time - warm yellow
-    Color(0xFFFFCDD2), // location - soft pink
-    Color(0xFFEF5350), // someone - red
-    Color(0xFF90CAF9), // confused - blue
+    Color(0xFFFFDD8F), // dark yellow
+    Color(0xFFFFC5CA), // dark pink
+    Color(0xFFABEB96), // dark green
+    Color(0xFF9CC1FD), // dark blue
+  ];
+
+  static const _backgroundColors = [
+    Color(0xFFFFF8D9), // light yellow
+    Color(0xFFFDEAEC), // light pink
+    Color(0xFFE8FFD9), // light green
+    Color(0xFFE2EEFE), // light blue
   ];
 
   void _togglePlay() {
@@ -46,21 +53,26 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
     final idx = widget.situationIndex.clamp(0, 3);
     final data = AppState.getMessagesFor(AppState.defaultPatientId)[idx]!;
     final doneColor = _doneColors[idx];
-    final isDark = idx == 2; // red background → white text
+    final backgroundColor = _backgroundColors[idx];
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: IconButton(
+                child: IconButton.filled(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
                   padding: EdgeInsets.zero,
+                  style: IconButton.styleFrom(
+                    backgroundColor: doneColor,
+                    foregroundColor: Colors.black,
+                  ),
                 ),
               ),
               const Spacer(),
@@ -111,26 +123,25 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
               const SizedBox(height: 24),
               Center(
                 child: SizedBox(
-                  width: 160,
-                  child: ElevatedButton(
+                  width: 200,
+                  child: FilledButton(
                     onPressed: () => Navigator.popUntil(
                       context,
                       (route) => route.settings.name == 'patientHome' || route.isFirst,
                     ),
-                    style: ElevatedButton.styleFrom(
+                    style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: doneColor,
-                      foregroundColor: isDark ? Colors.white : Colors.black,
+                      foregroundColor: Colors.black,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: const Text(
-                      'DONE',
+                      'Done',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
                   ),

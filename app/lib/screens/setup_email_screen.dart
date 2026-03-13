@@ -9,6 +9,9 @@ class SetupEmailScreen extends StatefulWidget {
 }
 
 class _SetupEmailScreenState extends State<SetupEmailScreen> {
+  static const _lightYellow = Color(0xFFFFF8D9);
+  static const _darkYellow = Color(0xFFFFDD8F);
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -47,16 +50,21 @@ class _SetupEmailScreenState extends State<SetupEmailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
+              IconButton.filled(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
+                style: IconButton.styleFrom(
+                  backgroundColor: _darkYellow,
+                  foregroundColor: Colors.black,
+                ),
               ),
               const Spacer(flex: 1),
               const Center(
@@ -147,21 +155,25 @@ class _SetupEmailScreenState extends State<SetupEmailScreen> {
                 ),
               ),
               const Spacer(flex: 2),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _isNextEnabled ? _next : null,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              Center(
+                child: SizedBox(
+                  width: 200,
+                  child: FilledButton(
+                    onPressed: _isNextEnabled ? _next : null,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      backgroundColor: _darkYellow,
+                      foregroundColor: Colors.black,
+                      disabledBackgroundColor: _darkYellow.withValues(alpha: 0.6),
+                      disabledForegroundColor: Colors.black45,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Next',
-                    style: TextStyle(fontSize: 16),
+                    child: const Text(
+                      'Next',
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                 ),
               ),
@@ -185,19 +197,19 @@ class _SetupEmailScreenState extends State<SetupEmailScreen> {
       hintText: hint,
       hintStyle: const TextStyle(color: Colors.black26),
       filled: true,
-      fillColor: Colors.grey[100],
+      fillColor: _lightYellow,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.black26),
+        borderSide: const BorderSide(color: _darkYellow),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.black26),
+        borderSide: const BorderSide(color: _darkYellow),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.black, width: 1.5),
+        borderSide: const BorderSide(color: _darkYellow, width: 2),
       ),
     );
   }

@@ -2,22 +2,30 @@ import 'package:flutter/material.dart';
 import 'breathing_screen.dart';
 
 class BreatherIntroScreen extends StatelessWidget {
+  static const _lightBlue = Color(0xFFE2EEFE);
+  static const _darkBlue = Color(0xFF9CC1FD);
+
   final bool isCaregiver;
   const BreatherIntroScreen({super.key, required this.isCaregiver});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _lightBlue,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
+              IconButton.filled(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
+                style: IconButton.styleFrom(
+                  backgroundColor: _darkBlue,
+                  foregroundColor: Colors.black,
+                ),
               ),
               Expanded(
                 child: Center(
@@ -35,8 +43,8 @@ class BreatherIntroScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 48),
                       SizedBox(
-                        width: 160,
-                        child: ElevatedButton(
+                        width: 200,
+                        child: FilledButton(
                           onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -45,21 +53,19 @@ class BreatherIntroScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          style: ElevatedButton.styleFrom(
+                          style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            backgroundColor: const Color(0xFF5C6BC0),
-                            foregroundColor: Colors.white,
+                            backgroundColor: _darkBlue,
+                            foregroundColor: Colors.black,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           child: const Text(
-                            'BEGIN',
+                            'Begin',
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
+                              fontSize: 16,
                             ),
                           ),
                         ),

@@ -10,7 +10,7 @@ class BreathingDoneScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -28,8 +28,9 @@ class BreathingDoneScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 22, color: Colors.black54),
               ),
               const Spacer(flex: 2),
-              SizedBox(
-                width: double.infinity,
+              Center(
+                child: SizedBox(
+                width: 200,
                 child: FilledButton(
                   onPressed: () => Navigator.pushReplacement(
                     context,
@@ -44,18 +45,20 @@ class BreathingDoneScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: const Color(0xFFE2EEFE),
                     foregroundColor: Colors.black,
                   ),
                   child: const Text(
                     'Keep going',
-                    style: TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
+                ),
               ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
+              const SizedBox(height: 12),
+              Center(
+                child: SizedBox(
+                width: 200,
                 child: FilledButton(
                   onPressed: () => Navigator.popUntil(
                     context,
@@ -66,20 +69,19 @@ class BreathingDoneScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: const Color(0xFF9CC1FD),
                     foregroundColor: Colors.black,
                   ),
                   child: const Text(
-                    'FINISH',
+                    'Finish',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.1,
+                      fontSize: 16,
                     ),
                   ),
                 ),
+                ),
               ),
-              const Spacer(flex: 1),
+              const SizedBox(height: 16),
             ],
           ),
         ),

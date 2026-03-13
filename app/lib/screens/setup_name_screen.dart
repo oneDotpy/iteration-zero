@@ -12,6 +12,9 @@ class SetupNameScreen extends StatefulWidget {
 }
 
 class _SetupNameScreenState extends State<SetupNameScreen> {
+	static const _lightYellow = Color(0xFFFFF8D9);
+	static const _darkYellow = Color(0xFFFFDD8F);
+
 	final _nameController = TextEditingController();
 	_SelectedRole? _selectedRole;
 
@@ -43,16 +46,21 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
 	@override
 	Widget build(BuildContext context) {
 		return Scaffold(
+			backgroundColor: Colors.white,
 			body: SafeArea(
 				child: Padding(
-					padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+					padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
 					child: Column(
 						crossAxisAlignment: CrossAxisAlignment.start,
 						children: [
-							IconButton(
+							IconButton.filled(
 								icon: const Icon(Icons.arrow_back),
 								onPressed: () => Navigator.pop(context),
 								padding: EdgeInsets.zero,
+								style: IconButton.styleFrom(
+									backgroundColor: _darkYellow,
+									foregroundColor: Colors.black,
+								),
 							),
 							const Spacer(flex: 1),
 							const Center(
@@ -89,20 +97,20 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
 									hintText: 'Your name',
 									hintStyle: const TextStyle(color: Colors.black26),
 									filled: true,
-									fillColor: Colors.grey[100],
+									fillColor: _lightYellow,
 									contentPadding:
 											const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
 									border: OutlineInputBorder(
 										borderRadius: BorderRadius.circular(12),
-										borderSide: const BorderSide(color: Colors.black26),
+										borderSide: const BorderSide(color: _darkYellow),
 									),
 									enabledBorder: OutlineInputBorder(
 										borderRadius: BorderRadius.circular(12),
-										borderSide: const BorderSide(color: Colors.black26),
+										borderSide: const BorderSide(color: _darkYellow),
 									),
 									focusedBorder: OutlineInputBorder(
 										borderRadius: BorderRadius.circular(12),
-										borderSide: const BorderSide(color: Colors.black, width: 1.5),
+										borderSide: const BorderSide(color: _darkYellow, width: 2),
 									),
 								),
 							),
@@ -122,11 +130,9 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
 											style: FilledButton.styleFrom(
 												padding: const EdgeInsets.symmetric(vertical: 18),
 												backgroundColor: _selectedRole == _SelectedRole.caregiver
-														? Colors.black
-														: Colors.grey[200],
-												foregroundColor: _selectedRole == _SelectedRole.caregiver
-														? Colors.white
-														: Colors.black,
+														? _darkYellow
+														: _lightYellow,
+												foregroundColor: Colors.black,
 												shape: RoundedRectangleBorder(
 													borderRadius: BorderRadius.circular(12),
 												),
@@ -143,11 +149,9 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
 											style: FilledButton.styleFrom(
 												padding: const EdgeInsets.symmetric(vertical: 18),
 												backgroundColor: _selectedRole == _SelectedRole.patient
-														? Colors.black
-														: Colors.grey[200],
-												foregroundColor: _selectedRole == _SelectedRole.patient
-														? Colors.white
-														: Colors.black,
+														? _darkYellow
+														: _lightYellow,
+												foregroundColor: Colors.black,
 												shape: RoundedRectangleBorder(
 													borderRadius: BorderRadius.circular(12),
 												),
@@ -158,19 +162,23 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
 								],
 							),
 							const Spacer(flex: 2),
-							SizedBox(
-								width: double.infinity,
-								child: FilledButton(
-									onPressed: _isNextEnabled ? _next : null,
-									style: FilledButton.styleFrom(
-										padding: const EdgeInsets.symmetric(vertical: 18),
-										backgroundColor: Colors.black,
-										foregroundColor: Colors.white,
-										shape: RoundedRectangleBorder(
-											borderRadius: BorderRadius.circular(12),
+							Center(
+								child: SizedBox(
+									width: 200,
+									child: FilledButton(
+										onPressed: _isNextEnabled ? _next : null,
+										style: FilledButton.styleFrom(
+											padding: const EdgeInsets.symmetric(vertical: 18),
+											backgroundColor: _darkYellow,
+											foregroundColor: Colors.black,
+											disabledBackgroundColor: _darkYellow.withValues(alpha: 0.6),
+											disabledForegroundColor: Colors.black45,
+											shape: RoundedRectangleBorder(
+												borderRadius: BorderRadius.circular(12),
+											),
 										),
+										child: const Text('Next', style: TextStyle(fontSize: 16)),
 									),
-									child: const Text('Next', style: TextStyle(fontSize: 16)),
 								),
 							),
 							const SizedBox(height: 16),

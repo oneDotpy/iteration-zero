@@ -14,6 +14,9 @@ class BreathingScreen extends StatefulWidget {
 
 class _BreathingScreenState extends State<BreathingScreen>
     with SingleTickerProviderStateMixin {
+  static const _lightBlue = Color(0xFFE2EEFE);
+  static const _darkBlue = Color(0xFF9CC1FD);
+
   _Phase _phase = _Phase.inhale;
   int _cyclesCompleted = 0;
   late AnimationController _controller;
@@ -132,17 +135,22 @@ class _BreathingScreenState extends State<BreathingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: IconButton(
+                child: IconButton.filled(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
                   padding: EdgeInsets.zero,
+                  style: IconButton.styleFrom(
+                    backgroundColor: _darkBlue,
+                    foregroundColor: Colors.black,
+                  ),
                 ),
               ),
               const Spacer(flex: 1),
@@ -176,15 +184,15 @@ class _BreathingScreenState extends State<BreathingScreen>
                             height: _outerSize,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.black12,
+                              color: _lightBlue,
                             ),
                           ),
                           Container(
                             width: innerSize,
                             height: innerSize,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFF5C6BC0),
+                              color: _darkBlue,
                             ),
                           ),
                         ],
@@ -205,8 +213,8 @@ class _BreathingScreenState extends State<BreathingScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: i < _cyclesCompleted + 1
-                          ? const Color(0xFF5C6BC0)
-                          : Colors.black12,
+                          ? _darkBlue
+                          : _lightBlue,
                     ),
                   );
                 }),

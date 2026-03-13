@@ -13,6 +13,10 @@ class SendReassuranceScreen extends StatefulWidget {
 }
 
 class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
+  static const _lightYellow = Color(0xFFFFF8D9);
+  static const _darkYellow = Color(0xFFFFDD8F);
+  static const _lightRed = Color(0xFFFDEAEC);
+
   final _headlineController = TextEditingController();
   final _subtextController = TextEditingController();
 
@@ -89,6 +93,10 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
       _snack('Please select at least one situation.');
       return;
     }
+    if (_headlineController.text.trim().isEmpty) {
+      _snack('Please type a message.');
+      return;
+    }
     AppState.saveReassurance(
       patientIds: _selectedPatientIds.toList(),
       situationIndexes: _selectedSituations.toList(),
@@ -126,17 +134,21 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
               Row(
                 children: [
-                  IconButton(
+                  IconButton.filled(
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
+                    style: IconButton.styleFrom(
+                      backgroundColor: _darkYellow,
+                      foregroundColor: Colors.black,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -225,8 +237,8 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                           sel ? _selectedSituations.remove(i) : _selectedSituations.add(i)),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: sel ? Colors.black : Colors.grey[200],
-                        foregroundColor: sel ? Colors.white : Colors.black,
+                        backgroundColor: sel ? _darkYellow : _lightYellow,
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
@@ -237,20 +249,20 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
               }),
 
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
+              Center(
+                child: SizedBox(
+                width: 200,
+                child: FilledButton(
                   onPressed: _save,
-                  style: ElevatedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
+                    backgroundColor: _darkYellow,
+                    foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('DONE',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: const Text('Done', style: TextStyle(fontSize: 16)),
+                ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -273,13 +285,13 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
           selected: selected,
           onSelected: (val) => setState(() =>
               val ? _selectedPatientIds.add(p.id) : _selectedPatientIds.remove(p.id)),
-          selectedColor: Colors.black,
-          checkmarkColor: Colors.white,
+          selectedColor: _darkYellow,
+          backgroundColor: _lightYellow,
+          checkmarkColor: Colors.black,
           labelStyle: TextStyle(
-            color: selected ? Colors.white : Colors.black,
+            color: Colors.black,
             fontWeight: FontWeight.w500,
           ),
-          backgroundColor: Colors.grey[200],
           side: BorderSide.none,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         );
@@ -291,18 +303,18 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     switch (_recordingState) {
       case _RecordingState.idle:
         return Column(children: [
-          AnimatedWaveform(isActive: false, color: Colors.black38),
+          AnimatedWaveform(isActive: false, color: _darkYellow),
           const SizedBox(height: 12),
           SizedBox(
             width: 180,
-            child: OutlinedButton.icon(
+            child: FilledButton.icon(
               onPressed: _startRecording,
               icon: const Icon(Icons.mic, color: Colors.red),
               label: const Text('Start recording'),
-              style: OutlinedButton.styleFrom(
+              style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
+                backgroundColor: _lightRed,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
@@ -327,18 +339,18 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          AnimatedWaveform(isActive: true, color: Colors.red),
+          AnimatedWaveform(isActive: true, color: _darkYellow),
           const SizedBox(height: 12),
           SizedBox(
             width: 140,
-            child: OutlinedButton.icon(
+            child: FilledButton.icon(
               onPressed: _stopRecording,
               icon: const Icon(Icons.stop, color: Colors.red),
               label: const Text('Stop'),
-              style: OutlinedButton.styleFrom(
+              style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
+                backgroundColor: _lightRed,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
@@ -363,7 +375,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          AnimatedWaveform(isActive: _isPreviewPlaying),
+          AnimatedWaveform(isActive: _isPreviewPlaying, color: _darkYellow),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -373,12 +385,18 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                 icon: Icon(
                     _isPreviewPlaying ? Icons.stop : Icons.play_arrow,
                     size: 18),
-                label: Text(_isPreviewPlaying ? 'Stop' : 'Preview'),
+                label: SizedBox(
+                  width: 56,
+                  child: Text(
+                    _isPreviewPlaying ? 'Stop' : 'Preview',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 10),
                   foregroundColor: Colors.black,
-                  backgroundColor: Colors.grey[300],
+                  backgroundColor: _lightYellow,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
@@ -407,20 +425,20 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.black26),
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: _lightYellow,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.black26),
+          borderSide: const BorderSide(color: _darkYellow),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.black26),
+          borderSide: const BorderSide(color: _darkYellow),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.black, width: 1.5),
+          borderSide: const BorderSide(color: _darkYellow, width: 2),
         ),
       );
 }
@@ -436,8 +454,8 @@ class _RadioDot extends StatelessWidget {
       height: 20,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.black54, width: 1.5),
-        color: Colors.grey[200],
+        border: Border.all(color: _SendReassuranceScreenState._darkYellow, width: 1.5),
+        color: _SendReassuranceScreenState._lightYellow,
       ),
       child: selected
           ? Center(
@@ -445,7 +463,8 @@ class _RadioDot extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: Colors.black),
+                    shape: BoxShape.circle,
+                    color: _SendReassuranceScreenState._darkYellow),
               ),
             )
           : null,

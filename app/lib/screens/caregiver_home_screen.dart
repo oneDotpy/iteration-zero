@@ -15,7 +15,7 @@ class CaregiverHomeScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -43,9 +43,10 @@ class CaregiverHomeScreen extends StatelessWidget {
                 'How can we help?',
                 style: TextStyle(fontSize: 24, color: Colors.black54),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
               _HomeButton(
                 label: 'Get some guidance',
+                backgroundColor: const Color(0xFFCAF5B8),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -53,9 +54,10 @@ class CaregiverHomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               _HomeButton(
                 label: 'Send reassurance',
+                backgroundColor: const Color(0xFFFFEAB4),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -63,9 +65,10 @@ class CaregiverHomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               _HomeButton(
                 label: 'Take a breather',
+                backgroundColor: const Color(0xFFBFD7FE),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -73,9 +76,10 @@ class CaregiverHomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               _HomeButton(
-                label: 'Patients',
+                label: 'My patients',
+                backgroundColor: const Color(0xFFFED7DB),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -104,9 +108,14 @@ class CaregiverHomeScreen extends StatelessWidget {
 
 class _HomeButton extends StatelessWidget {
   final String label;
+  final Color backgroundColor;
   final VoidCallback onTap;
 
-  const _HomeButton({required this.label, required this.onTap});
+  const _HomeButton({
+    required this.label,
+    required this.backgroundColor,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -119,10 +128,13 @@ class _HomeButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          backgroundColor: Colors.grey[200],
+          backgroundColor: backgroundColor,
           foregroundColor: Colors.black,
         ),
-        child: Text(label, style: const TextStyle(fontSize: 18)),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 18),
+        ),
       ),
     );
   }

@@ -9,14 +9,18 @@ class GuidanceDoneScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
+              IconButton.filled(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFABEB96),
+                  foregroundColor: Colors.black,
+                ),
               ),
               const Spacer(flex: 2),
               const Text(
@@ -24,8 +28,9 @@ class GuidanceDoneScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
               ),
               const Spacer(flex: 2),
-              SizedBox(
-                width: double.infinity,
+              Center(
+                child: SizedBox(
+                width: 200,
                 child: FilledButton(
                   onPressed: () {
                     // Pop back to caregiver home, then push fresh guidance
@@ -39,16 +44,18 @@ class GuidanceDoneScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: const Color(0xFFE8FFD9),
                     foregroundColor: Colors.black,
                   ),
                   child: const Text('Get more guidance',
-                      style: TextStyle(fontSize: 18)),
+                      style: TextStyle(fontSize: 16)),
+                ),
                 ),
               ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
+              const SizedBox(height: 12),
+              Center(
+                child: SizedBox(
+                width: 200,
                 child: FilledButton(
                   onPressed: () =>
                       Navigator.of(context).popUntil((r) => r.isFirst),
@@ -56,13 +63,14 @@ class GuidanceDoneScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: const Color(0xFFABEB96),
                     foregroundColor: Colors.black,
                   ),
-                  child: const Text('Home', style: TextStyle(fontSize: 18)),
+                  child: const Text('Home', style: TextStyle(fontSize: 16)),
+                ),
                 ),
               ),
-              const Spacer(flex: 1),
+              const SizedBox(height: 16),
             ],
           ),
         ),

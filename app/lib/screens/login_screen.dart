@@ -11,6 +11,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  static const _lightYellow = Color(0xFFFFF8D9);
+  static const _darkYellow = Color(0xFFFFDD8F);
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -53,16 +56,21 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _lightYellow,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(
+              IconButton.filled(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
+                style: IconButton.styleFrom(
+                  backgroundColor: _darkYellow,
+                  foregroundColor: Colors.black,
+                ),
               ),
               const Spacer(flex: 1),
               const Center(
@@ -126,37 +134,39 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const Spacer(flex: 2),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _login,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.black,
-                    disabledForegroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              Center(
+                child: SizedBox(
+                  width: 200,
+                  child: FilledButton(
+                    onPressed: _login,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      backgroundColor: _darkYellow,
+                      foregroundColor: Colors.black,
+                      disabledBackgroundColor: _darkYellow.withValues(alpha: 0.6),
+                      disabledForegroundColor: Colors.black45,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: SizedBox(
-                    width: 64,
-                    height: 24,
-                    child: Center(
-                      child: _loading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                    child: SizedBox(
+                      width: 64,
+                      height: 24,
+                      child: Center(
+                        child: _loading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Log in',
+                                style: TextStyle(fontSize: 16),
                               ),
-                            )
-                          : const Text(
-                              'Log in',
-                              style: TextStyle(fontSize: 16),
-                            ),
+                      ),
                     ),
                   ),
                 ),
@@ -181,19 +191,19 @@ class _LoginScreenState extends State<LoginScreen> {
       hintText: hint,
       hintStyle: const TextStyle(color: Colors.black26),
       filled: true,
-      fillColor: Colors.grey[100],
+      fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.black26),
+        borderSide: const BorderSide(color: _darkYellow),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.black26),
+        borderSide: const BorderSide(color: _darkYellow),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.black, width: 1.5),
+        borderSide: const BorderSide(color: _darkYellow, width: 2),
       ),
     );
   }

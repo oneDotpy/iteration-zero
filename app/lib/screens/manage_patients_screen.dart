@@ -10,6 +10,9 @@ class ManagePatientsScreen extends StatefulWidget {
 }
 
 class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
+  static const _lightPink = Color(0xFFFDEAEC);
+  static const _darkPink = Color(0xFFFFC5CA);
+
   void _showAddDialog() {
     final nameController = TextEditingController();
     final notesController = TextEditingController();
@@ -39,7 +42,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel', style: TextStyle(color: Colors.black45)),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               final name = nameController.text.trim();
               if (name.isEmpty) return;
@@ -47,7 +50,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
               Navigator.pop(ctx);
               setState(() {});
             },
-            style: ElevatedButton.styleFrom(
+            style: FilledButton.styleFrom(
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
             ),
@@ -97,7 +100,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel', style: TextStyle(color: Colors.black45)),
           ),
-          ElevatedButton(
+          FilledButton(
             onPressed: () {
               final name = nameController.text.trim();
               if (name.isEmpty) return;
@@ -106,7 +109,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
               Navigator.pop(ctx);
               setState(() {});
             },
-            style: ElevatedButton.styleFrom(
+            style: FilledButton.styleFrom(
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
             ),
@@ -122,18 +125,23 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
     final patients = AppState.patients;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  IconButton(
+                  IconButton.filled(
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
+                    style: IconButton.styleFrom(
+                      backgroundColor: _darkPink,
+                      foregroundColor: Colors.black,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -161,10 +169,12 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                         itemBuilder: (_, i) {
                           final p = patients[i];
                           return ListTile(
-                            tileColor: Colors.grey[200],
+                            tileColor: _lightPink,
                             contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 4),
+                                horizontal: 8, vertical: 8),
+                            horizontalTitleGap: 8,
                             leading: CircleAvatar(
+                              radius: 24,
                               backgroundColor: Colors.white,
                               child: Text(
                                 p.name.isNotEmpty
@@ -173,20 +183,21 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 20,
                                 ),
                               ),
                             ),
                             title: Text(
                               p.name,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 16),
+                                  fontWeight: FontWeight.w600, fontSize: 20),
                             ),
                             trailing: IconButton(
                               onPressed: () => _showEditDialog(p),
                               icon: const Icon(
                                 Icons.edit_outlined,
-                                color: Colors.black38,
-                                size: 20,
+                                color: _darkPink,
+                                size: 24,
                               ),
                             ),
                             onTap: () async {
@@ -205,23 +216,25 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                       ),
               ),
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
+              Center(
+                child: SizedBox(
+                width: 200,
                 child: FilledButton.icon(
                   onPressed: _showAddDialog,
                   icon: const Icon(Icons.person_add_outlined),
-                  label: const Text('Add patient'),
+                  label: const Text('Add patient', style: TextStyle(fontSize: 16)),
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.grey[200],
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    backgroundColor: _darkPink,
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
             ],
           ),
         ),

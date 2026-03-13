@@ -3,6 +3,9 @@ import 'caregiver_home_screen.dart';
 import 'patient_home_screen.dart';
 
 class SetupDoneScreen extends StatelessWidget {
+	static const _lightYellow = Color(0xFFFFF8D9);
+	static const _darkYellow = Color(0xFFFFDD8F);
+
 	final bool isCaregiver;
 
 	const SetupDoneScreen({super.key, required this.isCaregiver});
@@ -10,9 +13,10 @@ class SetupDoneScreen extends StatelessWidget {
 	@override
 	Widget build(BuildContext context) {
 		return Scaffold(
+			backgroundColor: _lightYellow,
 			body: SafeArea(
 				child: Padding(
-					padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+					padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
 					child: Column(
 						crossAxisAlignment: CrossAxisAlignment.center,
 						children: [
@@ -41,27 +45,29 @@ class SetupDoneScreen extends StatelessWidget {
 								),
 							),
 							const Spacer(flex: 2),
-							SizedBox(
-								width: double.infinity,
-								child: FilledButton(
-									onPressed: () => Navigator.pushAndRemoveUntil(
-										context,
-										MaterialPageRoute(
-											builder: (_) => isCaregiver
-													? const CaregiverHomeScreen()
-													: const PatientHomeScreen(),
+							Center(
+								child: SizedBox(
+									width: 200,
+									child: FilledButton(
+										onPressed: () => Navigator.pushAndRemoveUntil(
+											context,
+											MaterialPageRoute(
+												builder: (_) => isCaregiver
+														? const CaregiverHomeScreen()
+														: const PatientHomeScreen(),
+											),
+											(route) => false,
 										),
-										(route) => false,
-									),
-									style: FilledButton.styleFrom(
-										padding: const EdgeInsets.symmetric(vertical: 18),
-										backgroundColor: Colors.black,
-										foregroundColor: Colors.white,
-										shape: RoundedRectangleBorder(
-											borderRadius: BorderRadius.circular(12),
+										style: FilledButton.styleFrom(
+											padding: const EdgeInsets.symmetric(vertical: 18),
+											backgroundColor: _darkYellow,
+											foregroundColor: Colors.black,
+											shape: RoundedRectangleBorder(
+												borderRadius: BorderRadius.circular(12),
+											),
 										),
+										child: const Text('Continue', style: TextStyle(fontSize: 16)),
 									),
-									child: const Text('Continue', style: TextStyle(fontSize: 16)),
 								),
 							),
 							const SizedBox(height: 16),

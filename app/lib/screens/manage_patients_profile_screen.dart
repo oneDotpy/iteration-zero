@@ -15,6 +15,9 @@ class ManagePatientsProfileScreen extends StatefulWidget {
 }
 
 class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScreen> {
+	static const _lightPink = Color(0xFFFDEAEC);
+	static const _darkPink = Color(0xFFFFC5CA);
+
 	void _showEditDialog() {
 		final patient = widget.patient;
 		final nameController = TextEditingController(text: patient.name);
@@ -54,7 +57,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 						onPressed: () => Navigator.pop(ctx),
 						child: const Text('Cancel', style: TextStyle(color: Colors.black45)),
 					),
-					ElevatedButton(
+					FilledButton(
 						onPressed: () {
 							final name = nameController.text.trim();
 							if (name.isEmpty) return;
@@ -63,7 +66,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 							Navigator.pop(ctx);
 							setState(() {});
 						},
-						style: ElevatedButton.styleFrom(
+						style: FilledButton.styleFrom(
 							backgroundColor: Colors.black,
 							foregroundColor: Colors.white,
 						),
@@ -80,80 +83,109 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 
 		return Scaffold(
 			body: SafeArea(
-				child: Padding(
-					padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-					child: Column(
-						crossAxisAlignment: CrossAxisAlignment.stretch,
-						children: [
-							Row(
-								mainAxisAlignment: MainAxisAlignment.spaceBetween,
+				child: Column(
+					crossAxisAlignment: CrossAxisAlignment.stretch,
+					children: [
+						Container(
+							width: double.infinity,
+							decoration: const BoxDecoration(
+								color: _lightPink,
+								borderRadius: BorderRadius.only(
+									bottomLeft: Radius.circular(20),
+									bottomRight: Radius.circular(20),
+								),
+							),
+							padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+							child: Column(
 								children: [
-									IconButton(
-										icon: const Icon(Icons.arrow_back),
-										onPressed: () => Navigator.pop(context),
-										padding: EdgeInsets.zero,
+									Row(
+										mainAxisAlignment: MainAxisAlignment.spaceBetween,
+										children: [
+											IconButton.filled(
+												icon: const Icon(Icons.arrow_back),
+												onPressed: () => Navigator.pop(context),
+												padding: EdgeInsets.zero,
+												style: IconButton.styleFrom(
+													backgroundColor: _darkPink,
+													foregroundColor: Colors.black,
+												),
+											),
+											IconButton.filled(
+												onPressed: _showEditDialog,
+												icon: const Icon(Icons.edit_outlined, size: 18),
+												style: IconButton.styleFrom(
+													backgroundColor: _darkPink,
+													foregroundColor: Colors.black,
+												),
+											),
+										],
 									),
-									TextButton.icon(
-										onPressed: _showEditDialog,
-										icon: const Icon(Icons.edit_outlined, size: 18),
-										label: const Text('Edit'),
-										style: TextButton.styleFrom(
-											foregroundColor: Colors.black54,
+									const SizedBox(height: 24),
+									CircleAvatar(
+										radius: 60,
+										backgroundColor: Colors.white,
+										child: Text(
+											patient.name.isNotEmpty
+													? patient.name[0].toUpperCase()
+													: '?',
+											style: const TextStyle(
+												fontSize: 44,
+												fontWeight: FontWeight.bold,
+												color: Colors.black,
+											),
+										),
+									),
+									const SizedBox(height: 16),
+									Text(
+										patient.name,
+										textAlign: TextAlign.center,
+										style: const TextStyle(
+											fontSize: 34,
+											fontWeight: FontWeight.bold,
 										),
 									),
 								],
 							),
-							const SizedBox(height: 56),
-							CircleAvatar(
-								radius: 60,
-								backgroundColor: Colors.grey[200],
-								child: Text(
-									patient.name.isNotEmpty ? patient.name[0].toUpperCase() : '?',
-									style: const TextStyle(
-										fontSize: 44,
-										fontWeight: FontWeight.bold,
-										color: Colors.black,
-									),
-								),
-							),
-							const SizedBox(height: 20),
-							Text(
-								patient.name,
-								textAlign: TextAlign.center,
-								style: const TextStyle(
-									fontSize: 34,
-									fontWeight: FontWeight.bold,
-								),
-							),
-							const SizedBox(height: 20),
-							Text(
-								patient.notes.isEmpty ? 'No notes yet.' : patient.notes,
-								textAlign: TextAlign.center,
-								style: const TextStyle(
-									fontSize: 18,
-									color: Colors.black54,
-									height: 1.4,
-								),
-							),
-							const Spacer(),
-							SizedBox(
-								width: double.infinity,
-								child: FilledButton(
-									onPressed: () => Navigator.pop(context),
-									style: FilledButton.styleFrom(
-										padding: const EdgeInsets.symmetric(vertical: 16),
-										backgroundColor: Colors.grey[200],
-										foregroundColor: Colors.black,
-										shape: RoundedRectangleBorder(
-											borderRadius: BorderRadius.circular(12),
+						),
+						Expanded(
+							child: Padding(
+								padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+								child: Column(
+									crossAxisAlignment: CrossAxisAlignment.stretch,
+									children: [
+										Text(
+											patient.notes.isEmpty ? 'No notes yet.' : patient.notes,
+											textAlign: TextAlign.center,
+											style: const TextStyle(
+												fontSize: 18,
+												color: Colors.black54,
+												height: 1.4,
+											),
 										),
-									),
-									child: const Text('Done', style: TextStyle(fontSize: 18)),
+										const Spacer(),
+										Center(
+											child: SizedBox(
+												width: 200,
+												child: FilledButton(
+												onPressed: () => Navigator.pop(context),
+												style: FilledButton.styleFrom(
+													padding: const EdgeInsets.symmetric(vertical: 18),
+													backgroundColor: _darkPink,
+													foregroundColor: Colors.black,
+													shape: RoundedRectangleBorder(
+														borderRadius: BorderRadius.circular(12),
+													),
+												),
+												child: const Text('Done', style: TextStyle(fontSize: 16)),
+												),
+											),
+										),
+										const SizedBox(height: 16),
+									],
 								),
 							),
-							const SizedBox(height: 8),
-						],
-					),
+						),
+					],
 				),
 			),
 		);
