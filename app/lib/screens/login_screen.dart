@@ -70,9 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final colors = context.appColors;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: _lightYellow,
       appBar: AppBar(
-        backgroundColor: colors.background,
+        backgroundColor: _lightYellow,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: GestureDetector(
@@ -80,13 +80,12 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: colors.surface,
+              color: _darkYellow,
               borderRadius: BorderRadius.circular(10),
-              boxShadow: [colors.shadow],
             ),
-            child: Icon(
+            child: const Icon(
               Icons.arrow_back_rounded,
-              color: colors.textHigh,
+              color: Colors.black,
               size: 18,
             ),
           ),
@@ -213,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: colors.primary,
+                        color: _darkYellow,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       alignment: Alignment.center,
@@ -221,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: Colors.black,
                           strokeWidth: 2.5,
                         ),
                       ),
@@ -229,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   : PrimaryCtaButton(
                       label: 'Sign In',
                       onTap: _login,
-                      color: colors.primary,
+                      color: _darkYellow,
                     ),
 
               const SizedBox(height: 16),
@@ -270,9 +269,9 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     "Don't have an account?",
-                    style: TextStyle(fontSize: 14, color: colors.textMed),
+                    style: TextStyle(fontSize: 14, color: Colors.black54),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pushReplacement(
@@ -281,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           builder: (_) => const CreateAccountScreen()),
                     ),
                     style: TextButton.styleFrom(
-                      foregroundColor: colors.primary,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                     ),
                     child: const Text(

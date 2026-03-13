@@ -17,6 +17,9 @@ class CreateAccountScreen extends StatefulWidget {
 }
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
+  static const _lightYellow = Color(0xFFFFF8D9);
+  static const _darkYellow = Color(0xFFFFDD8F);
+
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -81,9 +84,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     final colors = context.appColors;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: _lightYellow,
       appBar: AppBar(
-        backgroundColor: colors.background,
+        backgroundColor: _lightYellow,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: GestureDetector(
@@ -91,13 +94,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: colors.surface,
+              color: _darkYellow,
               borderRadius: BorderRadius.circular(10),
-              boxShadow: [colors.shadow],
             ),
-            child: Icon(
+            child: const Icon(
               Icons.arrow_back_rounded,
-              color: colors.textHigh,
+              color: Colors.black,
               size: 18,
             ),
           ),
@@ -112,12 +114,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             children: [
               const SizedBox(height: 8),
 
-              Text(
+              const Text(
                 'Create Account',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
-                  color: colors.textHigh,
+                  color: Colors.black,
                   height: 1.2,
                 ),
                 textAlign: TextAlign.center,
@@ -125,12 +127,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
               const SizedBox(height: 8),
 
-              Text(
+              const Text(
                 "Let's get you set up.",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: colors.textMed,
+                  color: Colors.black54,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -148,23 +150,20 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         decoration: BoxDecoration(
                           color: _role == 'caregiver'
-                              ? colors.primary
-                              : colors.surface,
+                              ? _darkYellow
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: _role == 'caregiver'
-                                ? colors.primary
-                                : colors.border,
+                                ? _darkYellow
+                                : Colors.black12,
                           ),
-                          boxShadow: [colors.shadow],
                         ),
                         child: Column(
                           children: [
                             Icon(
                               Icons.shield_outlined,
-                              color: _role == 'caregiver'
-                                  ? Colors.white
-                                  : colors.textMed,
+                              color: Colors.black,
                               size: 22,
                             ),
                             const SizedBox(height: 4),
@@ -173,9 +172,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: _role == 'caregiver'
-                                    ? Colors.white
-                                    : colors.textMed,
+                                color: Colors.black,
                               ),
                             ),
                           ],
@@ -192,34 +189,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         decoration: BoxDecoration(
                           color: _role == 'patient'
-                              ? colors.rose
-                              : colors.surface,
+                              ? _darkYellow
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: _role == 'patient'
-                                ? colors.rose
-                                : colors.border,
+                                ? _darkYellow
+                                : Colors.black12,
                           ),
-                          boxShadow: [colors.shadow],
                         ),
                         child: Column(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.favorite_border_rounded,
-                              color: _role == 'patient'
-                                  ? Colors.white
-                                  : colors.textMed,
+                              color: Colors.black,
                               size: 22,
                             ),
                             const SizedBox(height: 4),
-                            Text(
+                            const Text(
                               'Patient',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: _role == 'patient'
-                                    ? Colors.white
-                                    : colors.textMed,
+                                color: Colors.black,
                               ),
                             ),
                           ],
@@ -306,8 +298,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                  color: colors.primary, width: 1.5),
+                              borderSide: const BorderSide(
+                                  color: _darkYellow, width: 1.5),
                             ),
                           ),
                         ),
@@ -325,7 +317,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       width: double.infinity,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: colors.primary,
+                        color: _darkYellow,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       alignment: Alignment.center,
@@ -333,7 +325,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: Colors.black,
                           strokeWidth: 2.5,
                         ),
                       ),
@@ -341,7 +333,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   : PrimaryCtaButton(
                       label: 'Create Account',
                       onTap: _createAccount,
-                      color: colors.primary,
+                      color: _darkYellow,
                     ),
 
               const SizedBox(height: 20),
@@ -350,11 +342,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Already have an account?',
                     style: TextStyle(
                       fontSize: 14,
-                      color: colors.textMed,
+                      color: Colors.black54,
                     ),
                   ),
                   TextButton(
@@ -363,7 +355,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                     ),
                     style: TextButton.styleFrom(
-                      foregroundColor: colors.primary,
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                     ),
                     child: const Text(

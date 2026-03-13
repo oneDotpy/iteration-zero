@@ -1,7 +1,7 @@
 // lib/screens/welcome_screen.dart
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
-import 'setup_email_screen.dart';
+import 'create_account_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -50,7 +50,7 @@ class WelcomeScreen extends StatelessWidget {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const SetupEmailScreen(),
+                        builder: (_) => const CreateAccountScreen(),
                       ),
                     );
                   } catch (_) {
