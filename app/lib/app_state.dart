@@ -163,6 +163,24 @@ class AppState {
     patientMessages[id] = _defaultMessages();
   }
 
+  static void completeSignup({required String name, required bool isCaregiver}) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+
+    loggedInName = trimmed;
+
+    if (!isCaregiver) {
+      final index = patients.indexWhere((p) => p.id == defaultPatientId);
+      if (index >= 0) {
+        patients[index].name = trimmed;
+      }
+    }
+  }
+
+  static void resetDisplayNamesToDefaults() {
+    // no-op: names are managed via loggedInName and _accounts
+  }
+
   static void removePatient(String id) {
     patients.removeWhere((p) => p.id == id);
     patientMessages.remove(id);

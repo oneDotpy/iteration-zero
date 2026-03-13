@@ -16,6 +16,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  static const _lightYellow = Color(0xFFFFF8D9);
+  static const _darkYellow = Color(0xFFFFDD8F);
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -30,6 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login() {
+    if (_loading) return;
+
     setState(() {
       _loading = true;
       _errorMessage = '';

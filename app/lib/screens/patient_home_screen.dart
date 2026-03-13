@@ -1,4 +1,5 @@
 // lib/screens/patient_home_screen.dart
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme/app_colors.dart';
@@ -10,8 +11,30 @@ import 'breather_intro_screen.dart';
 import 'settings_screen.dart';
 import 'welcome_screen.dart';
 
-class PatientHomeScreen extends StatelessWidget {
+class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
+
+  @override
+  State<PatientHomeScreen> createState() => _PatientHomeScreenState();
+}
+
+class _PatientHomeScreenState extends State<PatientHomeScreen> {
+  final Random _random = Random();
+  int? _lastVoiceSituationIndex;
+
+  int _nextRandomVoiceSituationIndex() {
+    const options = [0, 1, 2, 3];
+    if (_lastVoiceSituationIndex == null) {
+      final first = options[_random.nextInt(options.length)];
+      _lastVoiceSituationIndex = first;
+      return first;
+    }
+
+    final filtered = options.where((i) => i != _lastVoiceSituationIndex).toList();
+    final next = filtered[_random.nextInt(filtered.length)];
+    _lastVoiceSituationIndex = next;
+    return next;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,14 +155,17 @@ class PatientHomeScreen extends StatelessWidget {
               PrimaryCtaButton(
                 label: 'Hear a familiar voice',
                 icon: Icons.volume_up_outlined,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PatientReassuranceScreen(
-                      situationIndex: 3,
+                onTap: () {
+                  final randomIndex = _nextRandomVoiceSituationIndex();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PatientReassuranceScreen(
+                        situationIndex: randomIndex,
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
                 color: colors.primary,
               ),
 

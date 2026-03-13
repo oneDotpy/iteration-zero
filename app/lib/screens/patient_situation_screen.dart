@@ -7,6 +7,9 @@ import 'patient_reassurance_screen.dart';
 class PatientSituationScreen extends StatelessWidget {
   const PatientSituationScreen({super.key});
 
+  static const _lightPink = Color(0xFFFDEAEC);
+  static const _darkPink = Color(0xFFFFC5CA);
+
   static const _situations = [
     _Situation(
       label: 'Unsure about time',

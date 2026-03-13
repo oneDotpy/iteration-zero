@@ -18,6 +18,9 @@ class BreathingScreen extends StatefulWidget {
 
 class _BreathingScreenState extends State<BreathingScreen>
     with SingleTickerProviderStateMixin {
+  static const _lightBlue = Color(0xFFE2EEFE);
+  static const _darkBlue = Color(0xFF9CC1FD);
+
   _Phase _phase = _Phase.inhale;
   int _cyclesCompleted = 0;
   late AnimationController _controller;

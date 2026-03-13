@@ -7,6 +7,9 @@ import '../widgets/primary_cta_button.dart';
 import 'breathing_screen.dart';
 
 class BreatherIntroScreen extends StatelessWidget {
+  static const _lightBlue = Color(0xFFE2EEFE);
+  static const _darkBlue = Color(0xFF9CC1FD);
+
   final bool isCaregiver;
   const BreatherIntroScreen({super.key, required this.isCaregiver});
 

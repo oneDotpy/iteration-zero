@@ -16,6 +16,10 @@ class SendReassuranceScreen extends StatefulWidget {
 }
 
 class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
+  static const _lightYellow = Color(0xFFFFF8D9);
+  static const _darkYellow = Color(0xFFFFDD8F);
+  static const _lightRed = Color(0xFFFDEAEC);
+
   final _headlineController = TextEditingController();
   final _subtextController = TextEditingController();
 
@@ -98,6 +102,10 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     }
     if (_selectedSituations.isEmpty) {
       _snack('Please select at least one situation.');
+      return;
+    }
+    if (_headlineController.text.trim().isEmpty) {
+      _snack('Please type a message.');
       return;
     }
     AppState.saveReassurance(
