@@ -26,8 +26,11 @@ class AppState {
   static const patientEmail = 'patient@gmail.com';
   static const patientPassword = 'patient';
 
-  static const caregiverName = 'Alex';
-  static const patientName = 'Margaret';
+  static const defaultCaregiverName = 'Alex';
+  static const defaultPatientName = 'Margaret';
+
+  static String caregiverName = defaultCaregiverName;
+  static String patientName = defaultPatientName;
 
   // The logged-in patient account always maps to this ID
   static const defaultPatientId = 'patient_default';
@@ -76,6 +79,22 @@ class AppState {
     final id = 'patient_${DateTime.now().millisecondsSinceEpoch}';
     patients.add(PatientProfile(id: id, name: name, notes: notes));
     patientMessages[id] = _defaultMessages();
+  }
+
+  static void completeSignup({required String name, required bool isCaregiver}) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+
+    if (isCaregiver) {
+      caregiverName = trimmed;
+      return;
+    }
+
+    patientName = trimmed;
+    final index = patients.indexWhere((p) => p.id == defaultPatientId);
+    if (index >= 0) {
+      patients[index].name = trimmed;
+    }
   }
 
   static void removePatient(String id) {

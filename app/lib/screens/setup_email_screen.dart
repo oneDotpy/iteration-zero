@@ -1,51 +1,47 @@
 import 'package:flutter/material.dart';
-import '../app_state.dart';
-import 'caregiver_home_screen.dart';
-import 'patient_home_screen.dart';
+import 'setup_name_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SetupEmailScreen extends StatefulWidget {
+	const SetupEmailScreen({super.key});
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
+	@override
+	State<SetupEmailScreen> createState() => _SetupEmailScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SetupEmailScreenState extends State<SetupEmailScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
-  String? _errorMessage;
-  bool _loading = false;
+  bool _obscureConfirmPassword = true;
 
-  void _login() {
-    if (_loading) return;
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
 
-    setState(() {
-      _errorMessage = null;
-      _loading = true;
-    });
+  bool get _isNextEnabled {
+    return _emailController.text.trim().isNotEmpty &&
+        _passwordController.text.isNotEmpty &&
+        _confirmPasswordController.text.isNotEmpty &&
+        _passwordsMatch;
+  }
 
-    // Simulate a brief network delay for realism
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      final role = AppState.login(_emailController.text, _passwordController.text);
-      setState(() => _loading = false);
+  bool get _passwordsMatch =>
+      _passwordController.text == _confirmPasswordController.text;
 
-      if (role == null) {
-        setState(() => _errorMessage = 'Invalid email or password.');
-        return;
-      }
+  bool get _showPasswordMismatch {
+    return _confirmPasswordController.text.isNotEmpty && !_passwordsMatch;
+  }
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => role == 'caregiver'
-              ? const CaregiverHomeScreen()
-              : const PatientHomeScreen(),
-        ),
-        (route) => false,
-      );
-    });
+  void _next() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SetupNameScreen()),
+    );
   }
 
   @override
@@ -65,35 +61,36 @@ class _LoginScreenState extends State<LoginScreen> {
               const Spacer(flex: 1),
               const Center(
                 child: Text(
-                  'Log in',
+                  'Create an account',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 8),
               const Center(
                 child: Text(
-                  'Connection, not correction.',
+                  'Enter your details below.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 15, color: Colors.black45),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               _label('Email'),
               const SizedBox(height: 6),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
+                onChanged: (_) => setState(() {}),
                 decoration: _inputDecoration('example@mail.com'),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               _label('Password'),
               const SizedBox(height: 6),
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
-                onSubmitted: (_) => _login(),
+                onChanged: (_) => setState(() {}),
                 decoration: _inputDecoration('••••••••').copyWith(
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -107,18 +104,44 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
+              _label('Password again'),
+              const SizedBox(height: 6),
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: _obscureConfirmPassword,
+                autocorrect: false,
+                onSubmitted: (_) {
+                  if (_isNextEnabled) {
+                    _next();
+                  }
+                },
+                onChanged: (_) => setState(() {}),
+                decoration: _inputDecoration('••••••••').copyWith(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.black45,
+                    ),
+                    onPressed: () => setState(
+                      () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
               SizedBox(
                 height: 20,
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: AnimatedOpacity(
-                    opacity: _errorMessage == null ? 0 : 1,
+                    opacity: _showPasswordMismatch ? 1 : 0,
                     duration: const Duration(milliseconds: 150),
-                    child: Text(
-                      _errorMessage ?? ' ',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                    child: const Text(
+                      'Passwords do not match.',
+                      style: TextStyle(color: Colors.red, fontSize: 14),
                     ),
                   ),
                 ),
@@ -127,35 +150,18 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _login,
+                  onPressed: _isNextEnabled ? _next : null,
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.black,
-                    disabledForegroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: SizedBox(
-                    width: 64,
-                    height: 24,
-                    child: Center(
-                      child: _loading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              'Log in',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                    ),
+                  child: const Text(
+                    'Next',
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
               ),

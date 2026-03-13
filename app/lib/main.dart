@@ -1,3 +1,5 @@
+import 'package:connection_app/screens/caregiver_setup_screen.dart';
+import 'package:connection_app/screens/caregiver_setup_voice_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'screens/welcome_screen.dart';
@@ -30,3 +32,15 @@ class ConnectionApp extends StatelessWidget {
   size: Size(300, 550),
 )
 Widget welcomePreview() => const ConnectionApp();
+
+@Preview(
+  name: 'Setup Screen',
+  size: Size(300, 550),
+)
+Widget setupPreview() => const CaregiverSetupScreen();
+
+@Preview(
+  name: 'Setup Voice Screen',
+  size: Size(300, 550),
+)
+Widget setupVoicePreview() => const CaregiverSetupVoiceScreen();
