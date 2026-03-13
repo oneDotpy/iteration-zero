@@ -29,6 +29,13 @@ class AppState {
   static const caregiverName = 'Alex';
   static const patientName = 'Margaret';
 
+  // Set on login / sign-up
+  static String loggedInName = '';
+  static String loggedInRole = '';
+
+  // Registered accounts: email → {name, password, role}
+  static final Map<String, Map<String, String>> _registeredAccounts = {};
+
   // The logged-in patient account always maps to this ID
   static const defaultPatientId = 'patient_default';
 
@@ -67,9 +74,41 @@ class AppState {
   /// Returns 'caregiver', 'patient', or null.
   static String? login(String email, String password) {
     final e = email.trim().toLowerCase();
-    if (e == caregiverEmail && password == caregiverPassword) return 'caregiver';
-    if (e == patientEmail && password == patientPassword) return 'patient';
+    if (e == caregiverEmail && password == caregiverPassword) {
+      loggedInName = caregiverName;
+      loggedInRole = 'caregiver';
+      return 'caregiver';
+    }
+    if (e == patientEmail && password == patientPassword) {
+      loggedInName = patientName;
+      loggedInRole = 'patient';
+      return 'patient';
+    }
+    // Check dynamically registered accounts
+    final account = _registeredAccounts[e];
+    if (account != null && account['password'] == password) {
+      loggedInName = account['name']!;
+      loggedInRole = account['role']!;
+      return account['role'];
+    }
     return null;
+  }
+
+  /// Registers a new account. Returns an error string, or null on success.
+  static String? register({
+    required String name,
+    required String email,
+    required String password,
+    required String role,
+  }) {
+    final e = email.trim().toLowerCase();
+    if (e == caregiverEmail || e == patientEmail || _registeredAccounts.containsKey(e)) {
+      return 'An account with that email already exists.';
+    }
+    _registeredAccounts[e] = {'name': name, 'password': password, 'role': role};
+    loggedInName = name;
+    loggedInRole = role;
+    return null; // success
   }
 
   static void addPatient({required String name, String notes = ''}) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'patient_reassurance_screen.dart';
+import '../widgets/voice_input_bar.dart';
 
 class PatientSituationScreen extends StatelessWidget {
   const PatientSituationScreen({super.key});
@@ -20,7 +21,12 @@ class PatientSituationScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+                padding: EdgeInsets.zero,
+              ),
+              const SizedBox(height: 8),
               const Text(
                 "What's happening right now?",
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
@@ -60,7 +66,7 @@ class PatientSituationScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              const _WaveformWidget(),
+              const VoiceInputBar(),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -99,24 +105,3 @@ class _Situation {
   const _Situation(this.label, this.color, this.index);
 }
 
-class _WaveformWidget extends StatelessWidget {
-  const _WaveformWidget();
-
-  @override
-  Widget build(BuildContext context) {
-    final heights = [10.0, 18.0, 26.0, 14.0, 22.0, 12.0, 20.0, 8.0, 14.0, 20.0, 10.0, 6.0, 12.0, 5.0];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: heights.map((h) => Container(
-        width: 3,
-        height: h,
-        margin: const EdgeInsets.symmetric(horizontal: 3),
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      )).toList(),
-    );
-  }
-}

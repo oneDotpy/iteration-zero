@@ -56,7 +56,12 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 24),
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+                padding: EdgeInsets.zero,
+              ),
+              const SizedBox(height: 8),
               Text(
                 data.headline,
                 style: const TextStyle(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_state.dart';
-import '../widgets/animated_waveform.dart';
+import '../widgets/voice_input_bar.dart';
 import 'guidance_topic_screen.dart';
 import 'send_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
@@ -33,7 +33,7 @@ class CaregiverHomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Hi, ${AppState.caregiverName}.',
+                'Hi, ${AppState.loggedInName}.',
                 style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class CaregiverHomeScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              const AnimatedWaveform(),
+              const VoiceInputBar(),
               const SizedBox(height: 16),
             ],
           ),
