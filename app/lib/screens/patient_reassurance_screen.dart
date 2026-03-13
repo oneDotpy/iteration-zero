@@ -1,6 +1,9 @@
+// lib/screens/patient_reassurance_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../app_state.dart';
+import '../theme/app_theme.dart';
 import '../widgets/animated_waveform.dart';
 import 'patient_home_screen.dart';
 
@@ -15,30 +18,56 @@ class PatientReassuranceScreen extends StatefulWidget {
 
 class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   bool _isPlaying = false;
-  Timer? _playTimer;
+  final _player = AudioPlayer();
+  StreamSubscription? _completionSub;
 
-  static const _doneColors = [
-    Color(0xFFFFF3CD), // time - warm yellow
-    Color(0xFFFFCDD2), // location - soft pink
-    Color(0xFFEF5350), // someone - red
-    Color(0xFF90CAF9), // confused - blue
+  static const _situationBgColors = [
+    AppColors.situationTime,
+    AppColors.situationLocation,
+    AppColors.situationPerson,
+    AppColors.situationConfused,
   ];
 
-  void _togglePlay() {
-    if (_isPlaying) {
-      _playTimer?.cancel();
-      setState(() => _isPlaying = false);
-      return;
-    }
-    setState(() => _isPlaying = true);
-    _playTimer = Timer(const Duration(seconds: 4), () {
+  static const _situationAccentColors = [
+    Color(0xFFD4A017),
+    Color(0xFF5A9A5E),
+    Color(0xFF8B5CAB),
+    AppColors.caregiverPrimary,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _completionSub = _player.onPlayerComplete.listen((_) {
       if (mounted) setState(() => _isPlaying = false);
     });
   }
 
+  Future<void> _togglePlay(ReassuranceData data) async {
+    if (_isPlaying) {
+      await _player.stop();
+      setState(() => _isPlaying = false);
+      return;
+    }
+    if (data.recordingPath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('No voice message recorded yet.'),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+    setState(() => _isPlaying = true);
+    await _player.play(DeviceFileSource(data.recordingPath!));
+  }
+
   @override
   void dispose() {
-    _playTimer?.cancel();
+    _completionSub?.cancel();
+    _player.dispose();
     super.dispose();
   }
 
@@ -46,99 +75,136 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   Widget build(BuildContext context) {
     final idx = widget.situationIndex.clamp(0, 3);
     final data = AppState.getMessagesFor(AppState.defaultPatientId)[idx]!;
-    final doneColor = _doneColors[idx];
-    final isDark = idx == 2; // red background → white text
+    final bgColor = _situationBgColors[idx];
+    final accentColor = _situationAccentColors[idx];
 
     return Scaffold(
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [AppColors.cardShadow],
+                    ),
+                    child: const Icon(Icons.arrow_back_rounded,
+                        color: AppColors.textDark, size: 20),
+                  ),
+                ),
+              ),
+              const Spacer(flex: 1),
               Text(
                 data.headline,
                 style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  height: 1.2,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                  height: 1.25,
                 ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
                 data.subtext,
                 style: const TextStyle(
-                  fontSize: 20,
-                  color: Colors.black54,
-                  height: 1.3,
-                ),
+                    fontSize: 20, color: AppColors.textMedium, height: 1.4),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-
-              // Play button
-              Center(
-                child: GestureDetector(
-                  onTap: _togglePlay,
+              if (data.hasRecording && data.recordingPath != null) ...[
+                GestureDetector(
+                  onTap: () => _togglePlay(data),
                   child: Container(
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
+                      color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.10),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
                     child: Icon(
-                      _isPlaying ? Icons.stop : Icons.play_arrow,
-                      size: 40,
+                      _isPlaying
+                          ? Icons.stop_rounded
+                          : Icons.play_arrow_rounded,
+                      size: 42,
+                      color: accentColor,
                     ),
                   ),
                 ),
-              ),
-
-              if (_isPlaying) ...[
-                const SizedBox(height: 12),
-                const Center(
-                  child: Text(
+                if (_isPlaying) ...[
+                  const SizedBox(height: 10),
+                  Text(
                     'Playing...',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black45,
+                      fontSize: 13,
+                      color: AppColors.textMedium.withValues(alpha: 0.7),
                       letterSpacing: 0.5,
                     ),
                   ),
+                ],
+                const SizedBox(height: 28),
+                AnimatedWaveform(isActive: _isPlaying, color: accentColor),
+              ] else ...[
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.volume_off_outlined,
+                          size: 18, color: AppColors.textMedium),
+                      SizedBox(width: 8),
+                      Text('No voice message yet',
+                          style: TextStyle(
+                              fontSize: 14, color: AppColors.textMedium)),
+                    ],
+                  ),
                 ),
               ],
-
-              const SizedBox(height: 24),
-              AnimatedWaveform(isActive: _isPlaying),
-
-              const Spacer(),
-              Center(
-                child: SizedBox(
-                  width: 160,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PatientHomeScreen(),
-                      ),
-                      (route) => false,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: doneColor,
-                      foregroundColor: isDark ? Colors.white : Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'DONE',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+              const Spacer(flex: 2),
+              GestureDetector(
+                onTap: () => Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const PatientHomeScreen()),
+                  (route) => false,
+                ),
+                child: Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 64),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [AppColors.cardShadow],
+                  ),
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: accentColor,
                     ),
                   ),
                 ),

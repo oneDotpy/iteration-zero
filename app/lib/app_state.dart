@@ -1,3 +1,17 @@
+// lib/app_state.dart
+import 'package:flutter/material.dart';
+
+class AppSettings {
+  static ThemeMode themeMode = ThemeMode.light;
+  static bool narrationEnabled = true;
+  static bool largeTextMode = false;
+  static bool highContrastMode = false;
+  static bool reducedMotion = false;
+  static bool voiceGuidanceEnabled = true;
+  static double narrationSpeed = 1.0;
+  static double narrationVolume = 1.0;
+}
+
 class PatientProfile {
   final String id;
   String name;
@@ -11,12 +25,14 @@ class ReassuranceData {
   String subtext;
   bool hasRecording;
   int recordingDurationSeconds;
+  String? recordingPath;
 
   ReassuranceData({
     required this.headline,
     required this.subtext,
     this.hasRecording = false,
     this.recordingDurationSeconds = 0,
+    this.recordingPath,
   });
 }
 
@@ -90,6 +106,7 @@ class AppState {
     required String subtext,
     required bool hasRecording,
     required int recordingDurationSeconds,
+    String? recordingPath,
   }) {
     for (final pid in patientIds) {
       patientMessages.putIfAbsent(pid, _defaultMessages);
@@ -106,6 +123,7 @@ class AppState {
           recordingDurationSeconds: recordingDurationSeconds > 0
               ? recordingDurationSeconds
               : (existing?.recordingDurationSeconds ?? 0),
+          recordingPath: recordingPath ?? existing?.recordingPath,
         );
       }
     }

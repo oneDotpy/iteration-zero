@@ -1,10 +1,14 @@
+// lib/screens/caregiver_home_screen.dart
 import 'package:flutter/material.dart';
 import '../app_state.dart';
-import '../widgets/animated_waveform.dart';
+import '../theme/app_colors.dart';
+import '../widgets/soft_card.dart';
+import '../widgets/dashboard_action_card.dart';
 import 'guidance_topic_screen.dart';
 import 'send_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
 import 'manage_patients_screen.dart';
+import 'settings_screen.dart';
 import 'welcome_screen.dart';
 
 class CaregiverHomeScreen extends StatelessWidget {
@@ -12,80 +16,325 @@ class CaregiverHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
+    // Get first patient's first reassurance for preview
+    final firstPatient = AppState.patients.isNotEmpty
+        ? AppState.patients.first
+        : null;
+    final recentMessage = firstPatient != null
+        ? AppState.getMessagesFor(firstPatient.id)[0]
+        : null;
+
     return Scaffold(
+      backgroundColor: colors.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Header row ────────────────────────────────────────────────
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton(
-                    onPressed: () => _logout(context),
-                    child: const Text(
-                      'Sign out',
-                      style: TextStyle(color: Colors.black38, fontSize: 13),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hi, ${AppState.caregiverName}',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: colors.textHigh,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'How can we help today?',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: colors.textMed,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const SettingsScreen(isCaregiver: true),
+                      ),
+                    ),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [colors.shadow],
+                      ),
+                      child: Icon(
+                        Icons.settings_outlined,
+                        color: colors.textMed,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+
+              const SizedBox(height: 20),
+
+              // ── Today's Calm card ─────────────────────────────────────────
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [colors.shadow],
+                ),
+                clipBehavior: Clip.hardEdge,
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Sage left accent bar
+                      Container(
+                        width: 5,
+                        color: colors.sage,
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Today's reminder:",
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: colors.sage,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      '"Responding with kindness is always the right move."',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontStyle: FontStyle.italic,
+                                        color: colors.textHigh,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Icon(
+                                Icons.eco_outlined,
+                                color: colors.sage,
+                                size: 22,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Quick Actions section label ────────────────────────────────
               Text(
-                'Hi, ${AppState.caregiverName}.',
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+                'Quick Actions',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textLow,
+                  letterSpacing: 1.1,
                 ),
               ),
-              const Text(
-                'How can we help?',
-                style: TextStyle(fontSize: 24, color: Colors.black54),
-              ),
-              const SizedBox(height: 40),
-              _HomeButton(
-                label: 'Get some guidance',
+
+              const SizedBox(height: 10),
+
+              // ── Full-width action cards ───────────────────────────────────
+              DashboardActionCard(
+                title: 'Get some guidance',
+                subtitle: 'Suggested phrases & approaches',
+                icon: Icons.lightbulb_outline,
+                color: colors.primary,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const GuidanceTopicScreen(),
-                  ),
+                      builder: (_) => const GuidanceTopicScreen()),
                 ),
               ),
-              const SizedBox(height: 16),
-              _HomeButton(
-                label: 'Send reassurance',
+
+              const SizedBox(height: 10),
+
+              DashboardActionCard(
+                title: 'Send reassurance',
+                subtitle: 'Create a comforting message',
+                icon: Icons.favorite_border,
+                color: colors.sage,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const SendReassuranceScreen(),
-                  ),
+                      builder: (_) => const SendReassuranceScreen()),
                 ),
               ),
-              const SizedBox(height: 16),
-              _HomeButton(
-                label: 'Take a breather',
+
+              const SizedBox(height: 10),
+
+              DashboardActionCard(
+                title: 'Take a breather',
+                subtitle: 'A moment to breathe together',
+                icon: Icons.air,
+                color: colors.rose,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const BreatherIntroScreen(isCaregiver: true),
+                    builder: (_) =>
+                        const BreatherIntroScreen(isCaregiver: true),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              _HomeButton(
-                label: 'Manage patients',
+
+              const SizedBox(height: 10),
+
+              DashboardActionCard(
+                title: 'Manage patients',
+                subtitle: 'View & edit profiles',
+                icon: Icons.people_outline,
+                color: const Color(0xFF9B8EC4),
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const ManagePatientsScreen(),
+                      builder: (_) => const ManagePatientsScreen()),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Recent Reassurance card ───────────────────────────────────
+              if (recentMessage != null) ...[
+                SoftCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Recent message',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: colors.textLow,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const SendReassuranceScreen()),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: colors.primaryLight,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'Edit',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: colors.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        '"${recentMessage.headline}"',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontStyle: FontStyle.italic,
+                          color: colors.textHigh,
+                          height: 1.4,
+                        ),
+                      ),
+                      if (recentMessage.subtext.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          recentMessage.subtext,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colors.textMed,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              // ── Caregiver mode badge ──────────────────────────────────────
+              Center(
+                child: GestureDetector(
+                  onTap: () => _logout(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: colors.primaryLight,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.shield_outlined,
+                          color: colors.primary,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Caregiver View',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: colors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const Spacer(),
-              const AnimatedWaveform(),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -98,33 +347,6 @@ class CaregiverHomeScreen extends StatelessWidget {
       context,
       MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,
-    );
-  }
-}
-
-class _HomeButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _HomeButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 22),
-          side: const BorderSide(color: Colors.black, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: Colors.grey[200],
-          foregroundColor: Colors.black,
-        ),
-        child: Text(label, style: const TextStyle(fontSize: 18)),
-      ),
     );
   }
 }

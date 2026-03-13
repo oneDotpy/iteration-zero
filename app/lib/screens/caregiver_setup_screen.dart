@@ -1,4 +1,8 @@
+// lib/screens/caregiver_setup_screen.dart
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+import '../widgets/soft_card.dart';
+import '../widgets/primary_action_button.dart';
 import 'caregiver_setup_voice_screen.dart';
 
 class CaregiverSetupScreen extends StatefulWidget {
@@ -22,158 +26,217 @@ class _CaregiverSetupScreenState extends State<CaregiverSetupScreen> {
   ];
 
   final List<_SituationOption> _situationOptions = [
-    _SituationOption('Confusion about time', const Color(0xFFFFF3CD)),
-    _SituationOption('Confusion about location', const Color(0xFFFFCDD2)),
-    _SituationOption('Confusion about someone', const Color(0xFFEF5350)),
-    _SituationOption('Repetitive questioning', const Color(0xFF90CAF9)),
-    _SituationOption('Agitation or frustration', const Color(0xFF5C6BC0)),
+    _SituationOption('Confusion about time', AppColors.situationTime),
+    _SituationOption('Confusion about location', AppColors.situationLocation),
+    _SituationOption('Confusion about someone', AppColors.situationPerson),
+    _SituationOption('Repetitive questioning', AppColors.situationConfused),
+    _SituationOption('Agitation or frustration', const Color(0xFFFCE8E8)),
   ];
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
-                child: Text(
-                  'Caregiver Setup',
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
-                ),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                'Who are you caring for?',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              // Step indicator
+              _StepIndicator(currentStep: 0, totalSteps: 3),
+              const SizedBox(height: 28),
+
+              // Step 1: Who are you caring for?
+              SoftCard(
                 child: Column(
-                  children: List.generate(_caringForOptions.length, (i) {
-                    final isLast = i == _caringForOptions.length - 1;
-                    return Column(
-                      children: [
-                        InkWell(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Who are you caring for?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ...List.generate(_caringForOptions.length, (i) {
+                      final selected = _caringFor == i;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: GestureDetector(
                           onTap: () => setState(() => _caringFor = i),
-                          child: Padding(
+                          child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 14,
                             ),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? AppColors.caregiverLightBg
+                                  : const Color(0xFFF7F9FB),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: selected
+                                    ? AppColors.caregiverPrimary
+                                    : const Color(0xFFE0E7EE),
+                                width: selected ? 1.5 : 1,
+                              ),
+                            ),
                             child: Row(
                               children: [
-                                _RadioDot(selected: _caringFor == i),
+                                _RadioDot(selected: selected),
                                 const SizedBox(width: 12),
                                 Text(
                                   _caringForOptions[i],
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (!isLast)
-                          const Divider(height: 1, color: Colors.black26),
-                      ],
-                    );
-                  }),
-                ),
-              ),
-              const SizedBox(height: 28),
-              const Text(
-                'What name do they call you?',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  hintText: 'Your name...',
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.black),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.black),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 28),
-              const Text(
-                'Which situation happens most often?',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: List.generate(_situationOptions.length, (i) {
-                    final opt = _situationOptions[i];
-                    final isLast = i == _situationOptions.length - 1;
-                    return Column(
-                      children: [
-                        InkWell(
-                          onTap: () => setState(() => _situation = i),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 20,
-                                  height: 20,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: opt.color,
-                                    border: Border.all(
-                                      color: Colors.black26,
-                                      width: 1,
-                                    ),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: AppColors.textDark,
+                                    fontWeight: selected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  opt.label,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
                               ],
                             ),
                           ),
                         ),
-                        if (!isLast)
-                          const Divider(height: 1, color: Colors.black26),
-                      ],
-                    );
-                  }),
+                      );
+                    }),
+                  ],
                 ),
               ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _dot(filled: true),
-                  const SizedBox(width: 8),
-                  _dot(filled: true),
-                  const SizedBox(width: 8),
-                  _dot(),
-                ],
+
+              const SizedBox(height: 20),
+
+              // Step 2: Name
+              SoftCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'What do they call you?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        hintText: 'Your name...',
+                        hintStyle: TextStyle(
+                          color: AppColors.textMedium.withValues(alpha: 0.5),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF7F9FB),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE0E7EE)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE0E7EE)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.caregiverPrimary,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+
+              const SizedBox(height: 20),
+
+              // Step 3: Situations
+              SoftCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Which situations happen most often?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: List.generate(_situationOptions.length, (i) {
+                        final opt = _situationOptions[i];
+                        final selected = _situation == i;
+                        return GestureDetector(
+                          onTap: () => setState(() => _situation = i),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: selected ? opt.color : opt.color.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: selected
+                                    ? opt.color.withValues(alpha: 0.8)
+                                    : opt.color.withValues(alpha: 0.3),
+                                width: selected ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: selected
+                                        ? AppColors.textDark
+                                        : AppColors.textMedium.withValues(alpha: 0.4),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  opt.label,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textDark,
+                                    fontWeight: selected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 32),
             ],
           ),
@@ -181,42 +244,53 @@ class _CaregiverSetupScreenState extends State<CaregiverSetupScreen> {
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CaregiverSetupVoiceScreen(),
-                ),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+          child: PrimaryActionButton(
+            label: 'Next',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const CaregiverSetupVoiceScreen(),
               ),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                backgroundColor: Colors.grey[200],
-                foregroundColor: Colors.black,
-                elevation: 0,
-                side: const BorderSide(color: Colors.black),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Next', style: TextStyle(fontSize: 16)),
             ),
+            color: AppColors.caregiverPrimary,
+            textColor: Colors.white,
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _dot({bool filled = false}) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: filled ? Colors.black : Colors.black26,
-      ),
+class _StepIndicator extends StatelessWidget {
+  final int currentStep;
+  final int totalSteps;
+
+  const _StepIndicator({
+    required this.currentStep,
+    required this.totalSteps,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: List.generate(totalSteps, (i) {
+        final active = i <= currentStep;
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: i < totalSteps - 1 ? 8 : 0),
+            child: Container(
+              height: 4,
+              decoration: BoxDecoration(
+                color: active
+                    ? AppColors.caregiverPrimary
+                    : AppColors.caregiverPrimary.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 }
@@ -232,8 +306,11 @@ class _RadioDot extends StatelessWidget {
       height: 20,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.black54, width: 1.5),
-        color: Colors.grey[200],
+        border: Border.all(
+          color: selected ? AppColors.caregiverPrimary : const Color(0xFFBEC8D2),
+          width: 1.5,
+        ),
+        color: selected ? AppColors.caregiverPrimary.withValues(alpha: 0.1) : Colors.white,
       ),
       child: selected
           ? Center(
@@ -242,7 +319,7 @@ class _RadioDot extends StatelessWidget {
                 height: 10,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black,
+                  color: AppColors.caregiverPrimary,
                 ),
               ),
             )

@@ -1,92 +1,153 @@
+// lib/screens/patient_situation_screen.dart
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 import 'patient_reassurance_screen.dart';
 
 class PatientSituationScreen extends StatelessWidget {
   const PatientSituationScreen({super.key});
 
   static const _situations = [
-    _Situation('Unsure about time', Color(0xFFFFF3CD), 0),
-    _Situation('Unsure where I am', Color(0xFFFFCDD2), 1),
-    _Situation('Unsure about someone', Color(0xFFEF5350), 2),
-    _Situation('I just feel confused', Color(0xFF90CAF9), 3),
+    _Situation(
+      label: 'Unsure about time',
+      icon: Icons.access_time_rounded,
+      situationColorKey: 0,
+      index: 0,
+    ),
+    _Situation(
+      label: 'Unsure where I am',
+      icon: Icons.location_on_outlined,
+      situationColorKey: 1,
+      index: 1,
+    ),
+    _Situation(
+      label: 'Unsure about someone',
+      icon: Icons.person_outline_rounded,
+      situationColorKey: 2,
+      index: 2,
+    ),
+    _Situation(
+      label: 'I just feel confused',
+      icon: Icons.help_outline_rounded,
+      situationColorKey: 3,
+      index: 3,
+    ),
   ];
+
+  Color _situationColor(AppColors colors, int key) {
+    switch (key) {
+      case 0:
+        return colors.situationTimeBg;
+      case 1:
+        return colors.situationLocationBg;
+      case 2:
+        return colors.situationPersonBg;
+      default:
+        return colors.situationConfusedBg;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
+      backgroundColor: colors.roseLight,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 16),
-              const Text(
-                "What's happening right now?",
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              // Back button
+              Align(
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: colors.surface.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [colors.shadow],
+                    ),
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      color: colors.textHigh,
+                      size: 20,
+                    ),
+                  ),
+                ),
               ),
+
               const SizedBox(height: 28),
+
+              Text(
+                'I feel...',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textHigh,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 32),
+
               ..._situations.map(
                 (s) => Padding(
                   padding: const EdgeInsets.only(bottom: 14),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PatientReassuranceScreen(
-                            situationIndex: s.index,
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PatientReassuranceScreen(
+                          situationIndex: s.index,
+                        ),
+                      ),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(minHeight: 80),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 20,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _situationColor(colors, s.situationColorKey),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [colors.shadow],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(s.icon, color: colors.textHigh, size: 28),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              s.label,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: colors.textHigh,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        backgroundColor: s.color,
-                        foregroundColor: s.index == 2
-                            ? Colors.white
-                            : Colors.black,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        s.label,
-                        style: const TextStyle(fontSize: 18),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: colors.textMed,
+                            size: 22,
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
               ),
+
               const Spacer(),
-              const _WaveformWidget(),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _dot(filled: true),
-                  const SizedBox(width: 8),
-                  _dot(),
-                  const SizedBox(width: 8),
-                  _dot(),
-                ],
-              ),
-              const SizedBox(height: 8),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _dot({bool filled = false}) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: filled ? Colors.black : Colors.black26,
       ),
     );
   }
@@ -94,29 +155,14 @@ class PatientSituationScreen extends StatelessWidget {
 
 class _Situation {
   final String label;
-  final Color color;
+  final IconData icon;
+  final int situationColorKey;
   final int index;
-  const _Situation(this.label, this.color, this.index);
-}
 
-class _WaveformWidget extends StatelessWidget {
-  const _WaveformWidget();
-
-  @override
-  Widget build(BuildContext context) {
-    final heights = [10.0, 18.0, 26.0, 14.0, 22.0, 12.0, 20.0, 8.0, 14.0, 20.0, 10.0, 6.0, 12.0, 5.0];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: heights.map((h) => Container(
-        width: 3,
-        height: h,
-        margin: const EdgeInsets.symmetric(horizontal: 3),
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      )).toList(),
-    );
-  }
+  const _Situation({
+    required this.label,
+    required this.icon,
+    required this.situationColorKey,
+    required this.index,
+  });
 }

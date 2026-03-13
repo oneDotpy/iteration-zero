@@ -1,5 +1,9 @@
+// lib/screens/breathing_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../app_state.dart';
+import '../theme/app_colors.dart';
+import '../widgets/breathing_circle.dart';
 import 'breathing_done_screen.dart';
 
 enum _Phase { inhale, hold, exhale }
@@ -17,13 +21,7 @@ class _BreathingScreenState extends State<BreathingScreen>
   _Phase _phase = _Phase.inhale;
   int _cyclesCompleted = 0;
   late AnimationController _controller;
-  late Animation<double> _innerSizeAnim;
   Timer? _phaseTimer;
-
-  // Outer ring is fixed; inner circle animates between these sizes
-  static const _outerSize = 270.0;
-  static const _innerMin = 50.0;
-  static const _innerMax = 230.0;
 
   static const _phaseDurations = {
     _Phase.inhale: Duration(seconds: 4),
@@ -38,9 +36,6 @@ class _BreathingScreenState extends State<BreathingScreen>
       vsync: this,
       duration: _phaseDurations[_Phase.inhale],
     );
-    _innerSizeAnim = Tween<double>(begin: _innerMin, end: _innerMax).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
     _startPhase(_Phase.inhale);
   }
 
@@ -50,16 +45,12 @@ class _BreathingScreenState extends State<BreathingScreen>
     _controller.duration = duration;
 
     if (phase == _Phase.inhale) {
-      _innerSizeAnim = Tween<double>(begin: _innerMin, end: _innerMax).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      );
+      _controller.duration = _phaseDurations[phase];
       _controller.forward(from: 0);
     } else if (phase == _Phase.hold) {
-      // Circle stays at max — no animation needed
+      // Circle stays at max — BreathingCircle widget handles visual hold
     } else {
-      _innerSizeAnim = Tween<double>(begin: _innerMax, end: _innerMin).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      );
+      _controller.duration = _phaseDurations[phase];
       _controller.forward(from: 0);
     }
 
@@ -102,6 +93,28 @@ class _BreathingScreenState extends State<BreathingScreen>
     }
   }
 
+  String get _phaseHint {
+    switch (_phase) {
+      case _Phase.inhale:
+        return 'breathe in slowly...';
+      case _Phase.hold:
+        return 'hold gently...';
+      case _Phase.exhale:
+        return 'breathe out slowly...';
+    }
+  }
+
+  BreathPhase get _breathPhase {
+    switch (_phase) {
+      case _Phase.inhale:
+        return BreathPhase.inhale;
+      case _Phase.hold:
+        return BreathPhase.hold;
+      case _Phase.exhale:
+        return BreathPhase.exhale;
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -111,87 +124,96 @@ class _BreathingScreenState extends State<BreathingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final primaryColor = widget.isCaregiver ? colors.primary : colors.rose;
+    final bgColor = widget.isCaregiver ? colors.primaryLight : colors.roseLight;
+
     return Scaffold(
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
             // Back button row
-            Align(
-              alignment: Alignment.centerLeft,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: colors.surface.withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [colors.shadow],
+                    ),
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      color: colors.textHigh,
+                      size: 20,
+                    ),
+                  ),
+                ),
               ),
             ),
-            const Spacer(flex: 1),
-            Text(
-              _phaseLabel,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+
             const Spacer(flex: 1),
 
-            // Breathing circle: outer ring + animated inner filled circle
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                final innerSize = _phase == _Phase.hold
-                    ? _innerMax
-                    : _innerSizeAnim.value;
-                return SizedBox(
-                  width: _outerSize,
-                  height: _outerSize,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Outer ring (fixed)
-                      Container(
-                        width: _outerSize,
-                        height: _outerSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF333333),
-                            width: 5,
-                          ),
-                        ),
-                      ),
-                      // Inner blue circle (animated)
-                      Container(
-                        width: innerSize,
-                        height: innerSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF5C6BC0).withValues(alpha: 0.65),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+            // Phase label
+            Text(
+              _phaseLabel,
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w600,
+                color: primaryColor,
+                letterSpacing: 0.5,
+              ),
+            ),
+
+            const Spacer(flex: 1),
+
+            // Breathing circle — uses BreathingCircle widget driven by phase
+            BreathingCircle(
+              phase: _breathPhase,
+              primaryColor: primaryColor,
+              reducedMotion: AppSettings.reducedMotion,
             ),
 
             const Spacer(flex: 2),
-            // Cycle indicator dots
+
+            // Phase hint text
+            Text(
+              _phaseHint,
+              style: TextStyle(
+                fontSize: 15,
+                color: colors.textMed.withValues(alpha: 0.7),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Cycle dots
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(3, (i) {
-                return Container(
-                  width: 8,
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: i < _cyclesCompleted + 1 ? 24 : 8,
                   height: 8,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(4),
                     color: i < _cyclesCompleted + 1
-                        ? const Color(0xFF5C6BC0)
-                        : Colors.black12,
+                        ? primaryColor
+                        : primaryColor.withValues(alpha: 0.2),
                   ),
                 );
               }),
             ),
-            const SizedBox(height: 32),
+
+            const SizedBox(height: 40),
           ],
         ),
       ),

@@ -3,7 +3,7 @@ import 'package:connection_app/main.dart';
 
 void main() {
   testWidgets('Welcome screen smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const ConnectionApp());
-    expect(find.text('Get started'), findsOneWidget);
+    await tester.pumpWidget(const UnscriptedApp());
+    expect(find.text('[un]scripted'), findsOneWidget);
   });
 }

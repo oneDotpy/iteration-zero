@@ -1,9 +1,12 @@
+// lib/screens/patient_home_screen.dart
 import 'package:flutter/material.dart';
 import '../app_state.dart';
-import '../widgets/animated_waveform.dart';
+import '../theme/app_colors.dart';
+import '../widgets/primary_cta_button.dart';
 import 'patient_situation_screen.dart';
 import 'patient_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
+import 'settings_screen.dart';
 import 'welcome_screen.dart';
 
 class PatientHomeScreen extends StatelessWidget {
@@ -11,50 +14,123 @@ class PatientHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
+      backgroundColor: colors.roseLight,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Top row: sign-out + settings
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: () => _logout(context),
-                    child: const Text(
-                      'Sign out',
-                      style: TextStyle(color: Colors.black38, fontSize: 13),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const SettingsScreen(isCaregiver: false),
+                      ),
+                    ),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: colors.surface.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [colors.shadow],
+                      ),
+                      child: Icon(
+                        Icons.settings_outlined,
+                        color: colors.textMed,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ],
               ),
+
+              const SizedBox(height: 20),
+
+              // Greeting
+              Text(
+                'Hello,',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textHigh,
+                  height: 1.1,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                AppState.patientName,
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w800,
+                  color: colors.rose,
+                  height: 1.05,
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 8),
               Text(
-                'Hi, ${AppState.patientName}.',
-                style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+                'How are you feeling?',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                  color: colors.textMed,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 28),
+
+              // Avatar circle
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: colors.rose.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: colors.rose.withValues(alpha: 0.35),
+                    width: 2,
+                  ),
+                  boxShadow: [colors.shadow],
+                ),
+                child: Icon(
+                  Icons.favorite_rounded,
+                  color: colors.rose,
+                  size: 52,
                 ),
               ),
-              const Text(
-                'How can we help?',
-                style: TextStyle(fontSize: 24, color: Colors.black54),
-              ),
-              const SizedBox(height: 40),
-              _PatientButton(
+
+              const SizedBox(height: 36),
+
+              // Buttons
+              PrimaryCtaButton(
                 label: 'I feel unsure',
+                icon: Icons.help_outline_rounded,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => const PatientSituationScreen(),
                   ),
                 ),
+                color: colors.rose,
               ),
-              const SizedBox(height: 16),
-              _PatientButton(
+
+              const SizedBox(height: 14),
+
+              PrimaryCtaButton(
                 label: 'Hear a familiar voice',
+                icon: Icons.volume_up_outlined,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -63,10 +139,14 @@ class PatientHomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                color: colors.primary,
               ),
-              const SizedBox(height: 16),
-              _PatientButton(
+
+              const SizedBox(height: 14),
+
+              PrimaryCtaButton(
                 label: 'Take a breather',
+                icon: Icons.air,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -75,10 +155,44 @@ class PatientHomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                color: colors.sage,
               ),
+
               const Spacer(),
-              const AnimatedWaveform(),
-              const SizedBox(height: 16),
+
+              // Patient mode badge
+              GestureDetector(
+                onTap: () => _logout(context),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: colors.rose.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.person_outline,
+                        color: colors.rose,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Patient View',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: colors.rose,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -91,33 +205,6 @@ class PatientHomeScreen extends StatelessWidget {
       context,
       MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,
-    );
-  }
-}
-
-class _PatientButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _PatientButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 22),
-          side: const BorderSide(color: Colors.black, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: Colors.grey[200],
-          foregroundColor: Colors.black,
-        ),
-        child: Text(label, style: const TextStyle(fontSize: 18)),
-      ),
     );
   }
 }

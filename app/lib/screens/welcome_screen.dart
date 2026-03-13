@@ -1,111 +1,162 @@
+// lib/screens/welcome_screen.dart
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+import '../widgets/primary_cta_button.dart';
 import 'login_screen.dart';
+import 'create_account_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Spacer(flex: 3),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Get started',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w900,
-                    height: 1.1,
-                  ),
-                ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+                ? [
+                    const Color(0xFF16181C),
+                    const Color(0xFF1C2330),
+                  ]
+                : [
+                    const Color(0xFFF7F5F2),
+                    const Color(0xFFE8F0F5),
+                  ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    MediaQuery.of(context).padding.bottom -
+                    48,
               ),
-              const SizedBox(height: 12),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Connection, not correction.',
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
-                ),
-              ),
-              const Spacer(flex: 2),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _dot(filled: true),
-                  const SizedBox(width: 8),
-                  _dot(),
-                  const SizedBox(width: 8),
-                  _dot(),
+                  const SizedBox(height: 32),
+
+                  // Hero abstract illustration — 3 overlapping soft circles
+                  SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Back circle — rose
+                        Positioned(
+                          top: 20,
+                          left: 20,
+                          child: Container(
+                            width: 130,
+                            height: 130,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: colors.rose.withValues(alpha: 0.30),
+                            ),
+                          ),
+                        ),
+                        // Mid circle — sage
+                        Positioned(
+                          bottom: 20,
+                          right: 20,
+                          child: Container(
+                            width: 110,
+                            height: 110,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: colors.sage.withValues(alpha: 0.28),
+                            ),
+                          ),
+                        ),
+                        // Front circle — primary blue
+                        Container(
+                          width: 90,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colors.primary.withValues(alpha: 0.40),
+                          ),
+                          child: Icon(
+                            Icons.favorite_rounded,
+                            color: colors.primary,
+                            size: 36,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Wordmark
+                  Text(
+                    '[un]scripted',
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w800,
+                      color: colors.textHigh,
+                      height: 1.1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Tagline
+                  Text(
+                    'Connection, not correction.',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: colors.textMed,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 56),
+
+                  // Create Account button
+                  PrimaryCtaButton(
+                    label: 'Create Account',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CreateAccountScreen(),
+                      ),
+                    ),
+                    color: colors.primary,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Log In button (outlined)
+                  PrimaryCtaButton(
+                    label: 'Log In',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                    ),
+                    isOutlined: true,
+                    color: colors.primary,
+                  ),
+
+                  const SizedBox(height: 24),
                 ],
               ),
-              const Spacer(flex: 2),
-              _AppButton(
-                label: 'Create an account',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const LoginScreen(),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              _AppButton(
-                label: 'Log in',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const LoginScreen(),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _dot({bool filled = false}) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: filled ? Colors.black : Colors.black26,
-      ),
-    );
-  }
-}
-
-class _AppButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _AppButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          side: const BorderSide(color: Colors.black, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: Colors.grey[200],
-          foregroundColor: Colors.black,
-        ),
-        child: Text(label, style: const TextStyle(fontSize: 16)),
       ),
     );
   }
