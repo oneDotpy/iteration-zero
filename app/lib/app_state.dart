@@ -97,6 +97,16 @@ class AppState {
     }
   }
 
+  static void resetDisplayNamesToDefaults() {
+    caregiverName = defaultCaregiverName;
+    patientName = defaultPatientName;
+
+    final index = patients.indexWhere((p) => p.id == defaultPatientId);
+    if (index >= 0) {
+      patients[index].name = defaultPatientName;
+    }
+  }
+
   static void removePatient(String id) {
     patients.removeWhere((p) => p.id == id);
     patientMessages.remove(id);

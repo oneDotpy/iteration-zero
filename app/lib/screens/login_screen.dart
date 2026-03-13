@@ -36,6 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
+      AppState.resetDisplayNamesToDefaults();
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
