@@ -10,7 +10,6 @@ import 'send_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
 import 'manage_patients_screen.dart';
 import 'settings_screen.dart';
-import 'welcome_screen.dart';
 
 class CaregiverHomeScreen extends StatelessWidget {
   const CaregiverHomeScreen({super.key});
@@ -24,8 +23,8 @@ class CaregiverHomeScreen extends StatelessWidget {
         ? AppState.patients.first
         : null;
     final recentMessage = firstPatient != null
-        ? AppState.getMessagesFor(firstPatient.id)[0]
-        : null;
+      ? (AppState.getMessagesFor(firstPatient.id)[0]?.last)
+      : null;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -308,34 +307,31 @@ class CaregiverHomeScreen extends StatelessWidget {
 
               // ── Caregiver mode badge ──────────────────────────────────────
               Center(
-                child: GestureDetector(
-                  onTap: () => _logout(context),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: colors.primaryLight,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.shield_outlined,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: colors.primaryLight,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.shield_outlined,
+                        color: colors.primary,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Caregiver View',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                           color: colors.primary,
-                          size: 14,
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Caregiver View',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: colors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -348,11 +344,4 @@ class CaregiverHomeScreen extends StatelessWidget {
     );
   }
 
-  void _logout(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-      (route) => false,
-    );
-  }
 }

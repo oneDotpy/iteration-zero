@@ -23,60 +23,127 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
   String _role = 'caregiver'; // 'caregiver' or 'patient'
+  String? _nameError;
+  String? _emailError;
+  String? _passwordError;
+  String? _confirmPasswordError;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   void _createAccount() {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
     final name = _nameController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please fill in all fields.'),
-          backgroundColor: Colors.redAccent.shade200,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
+    final valid = _validateForm(
+      name: name,
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+    );
+    if (!valid) {
+      final msg = _firstValidationMessage();
+      if (msg != null) {
+        _showErrorSnack(msg);
+      }
       return;
     }
 
     setState(() => _loading = true);
 
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (!mounted) return;
-      setState(() => _loading = false);
+    final role = AppState.register(
+      email: email,
+      password: password,
+      name: name,
+      role: _role,
+    );
 
-      final role = AppState.register(
-        email: email,
-        password: password,
-        name: name,
-        role: _role,
-      );
+    if (!mounted) return;
+    setState(() => _loading = false);
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => role == 'patient'
-              ? const PatientHomeScreen()
-              : const CaregiverHomeScreen(),
-        ),
-        (route) => false,
-      );
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            role == 'patient' ? const PatientHomeScreen() : const CaregiverHomeScreen(),
+      ),
+      (route) => false,
+    );
+  }
+
+  bool _validateForm({
+    required String name,
+    required String email,
+    required String password,
+    required String confirmPassword,
+  }) {
+    final missingName = name.isEmpty;
+    final missingEmail = email.isEmpty;
+    final missingPassword = password.isEmpty;
+    final missingConfirm = confirmPassword.isEmpty;
+    final mismatch = !missingPassword && !missingConfirm && password != confirmPassword;
+
+    setState(() {
+      _nameError = missingName ? 'Please enter your name.' : null;
+      _emailError = missingEmail ? 'Please enter your email.' : null;
+      _passwordError = missingPassword ? 'Please enter a password.' : null;
+      if (missingConfirm) {
+        _confirmPasswordError = 'Please confirm your password.';
+      } else if (mismatch) {
+        _confirmPasswordError = 'Passwords do not match.';
+      } else {
+        _confirmPasswordError = null;
+      }
     });
+
+    return !(missingName || missingEmail || missingPassword || missingConfirm || mismatch);
+  }
+
+  void _onPasswordInputsChanged() {
+    final password = _passwordController.text;
+    final confirm = _confirmPasswordController.text;
+
+    setState(() {
+      if (_passwordError != null && password.isNotEmpty) {
+        _passwordError = null;
+      }
+      if (_confirmPasswordError != null && confirm.isNotEmpty) {
+        _confirmPasswordError = null;
+      }
+
+      if (confirm.isNotEmpty && password != confirm) {
+        _confirmPasswordError = 'Passwords do not match.';
+      }
+    });
+  }
+
+  String? _firstValidationMessage() {
+    return _nameError ?? _emailError ?? _passwordError ?? _confirmPasswordError;
+  }
+
+  void _showErrorSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent.shade200,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
   }
 
   @override
@@ -236,7 +303,23 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       label: 'Name',
                       prefixIcon: Icons.person_outline,
                       keyboardType: TextInputType.name,
+                      onChanged: (value) {
+                        if (_nameError != null && value.trim().isNotEmpty) {
+                          setState(() => _nameError = null);
+                        }
+                      },
                     ),
+                    if (_nameError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _nameError!,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 18),
                     SoftTextField(
                       controller: _emailController,
@@ -244,7 +327,23 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       label: 'Email',
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
+                      onChanged: (value) {
+                        if (_emailError != null && value.trim().isNotEmpty) {
+                          setState(() => _emailError = null);
+                        }
+                      },
                     ),
+                    if (_emailError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _emailError!,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 18),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,6 +359,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         const SizedBox(height: 6),
                         TextField(
                           controller: _passwordController,
+                          onChanged: (_) => _onPasswordInputsChanged(),
                           obscureText: _obscurePassword,
                           style: TextStyle(
                             color: colors.textHigh,
@@ -267,6 +367,64 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           ),
                           decoration: InputDecoration(
                             hintText: '••••••••',
+                            errorText: _passwordError,
+                            hintStyle: TextStyle(color: colors.textLow),
+                            filled: true,
+                            fillColor: colors.surfaceAlt,
+                            prefixIcon: Icon(
+                              Icons.lock_outline,
+                              color: colors.textMed,
+                              size: 20,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: colors.textMed,
+                                size: 20,
+                              ),
+                              onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 16),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: colors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: colors.border),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                  color: _darkYellow, width: 1.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          'Confirm password',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: colors.textMed,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        TextField(
+                          controller: _confirmPasswordController,
+                          onChanged: (_) => _onPasswordInputsChanged(),
+                          obscureText: _obscurePassword,
+                          style: TextStyle(
+                            color: colors.textHigh,
+                            fontSize: 16,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: '••••••••',
+                            errorText: _confirmPasswordError,
                             hintStyle: TextStyle(color: colors.textLow),
                             filled: true,
                             fillColor: colors.surfaceAlt,

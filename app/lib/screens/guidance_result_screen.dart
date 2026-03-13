@@ -156,32 +156,6 @@ class GuidanceResultScreen extends StatelessWidget {
 
               const Spacer(),
 
-              // Bottom buttons row
-              Row(
-                children: [
-                  Expanded(
-                    child: PrimaryCtaButton(
-                      label: 'More guidance',
-                      onTap: () => Navigator.pop(context),
-                      isOutlined: true,
-                      color: colors.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: PrimaryCtaButton(
-                      label: 'Home',
-                      onTap: () =>
-                          Navigator.of(context).popUntil((r) => r.isFirst),
-                      isOutlined: true,
-                      color: colors.primary,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
               PrimaryCtaButton(
                 label: 'Done',
                 onTap: () => Navigator.push(

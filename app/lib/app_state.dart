@@ -1,5 +1,6 @@
 // lib/app_state.dart
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 class _UserAccount {
   final String email;
@@ -93,32 +94,57 @@ class AppState {
     PatientProfile(id: defaultPatientId, name: _demoPatientName),
   ];
 
-  // Per-patient reassurance messages: patientId → situationIndex → data
-  static Map<String, Map<int, ReassuranceData>> patientMessages = {
+  // Per-patient reassurance messages: patientId -> situationIndex -> message list
+  static Map<String, Map<int, List<ReassuranceData>>> patientMessages = {
     defaultPatientId: _defaultMessages(),
   };
 
-  static Map<int, ReassuranceData> _defaultMessages() => {
-    0: ReassuranceData(
-      headline: "You don't need to worry about that right now.",
-      subtext: 'Everything is taken care of.',
-    ),
-    1: ReassuranceData(
-      headline: "You're safe here with me.",
-      subtext: 'This is a comfortable place.',
-    ),
-    2: ReassuranceData(
-      headline: "I'm someone who cares about you.",
-      subtext: "You're not alone.",
-    ),
-    3: ReassuranceData(
-      headline: "That's okay, I'm happy to help.",
-      subtext: 'We have time.',
-    ),
+  static Map<int, List<ReassuranceData>> _defaultMessages() => {
+    0: [
+      ReassuranceData(
+        headline: "You don't need to worry about that right now.",
+        subtext: 'Everything is taken care of.',
+      ),
+    ],
+    1: [
+      ReassuranceData(
+        headline: "You're safe here with me.",
+        subtext: 'This is a comfortable place.',
+      ),
+    ],
+    2: [
+      ReassuranceData(
+        headline: "I'm someone who cares about you.",
+        subtext: "You're not alone.",
+      ),
+    ],
+    3: [
+      ReassuranceData(
+        headline: "That's okay, I'm happy to help.",
+        subtext: 'We have time.',
+      ),
+    ],
   };
 
-  static Map<int, ReassuranceData> getMessagesFor(String patientId) =>
+  static Map<int, List<ReassuranceData>> getMessagesFor(String patientId) =>
       patientMessages[patientId] ?? _defaultMessages();
+
+  static ReassuranceData getRandomMessageFor({
+    required String patientId,
+    required int situationIndex,
+  }) {
+    final messagesBySituation = getMessagesFor(patientId);
+    final options =
+        messagesBySituation[situationIndex] ?? _defaultMessages()[situationIndex] ?? const [];
+    if (options.isEmpty) {
+      return ReassuranceData(
+        headline: "You're safe.",
+        subtext: 'Take a slow breath with me.',
+      );
+    }
+    final random = Random();
+    return options[random.nextInt(options.length)];
+  }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -198,19 +224,22 @@ class AppState {
     for (final pid in patientIds) {
       patientMessages.putIfAbsent(pid, _defaultMessages);
       for (final i in situationIndexes) {
-        final existing = patientMessages[pid]![i];
-        patientMessages[pid]![i] = ReassuranceData(
-          headline: headline.trim().isNotEmpty
-              ? headline.trim()
-              : (existing?.headline ?? ''),
-          subtext: subtext.trim().isNotEmpty
-              ? subtext.trim()
-              : (existing?.subtext ?? ''),
-          hasRecording: hasRecording || (existing?.hasRecording ?? false),
-          recordingDurationSeconds: recordingDurationSeconds > 0
-              ? recordingDurationSeconds
-              : (existing?.recordingDurationSeconds ?? 0),
-          recordingPath: recordingPath ?? existing?.recordingPath,
+        final existingList =
+            patientMessages[pid]!.putIfAbsent(i, () => <ReassuranceData>[]);
+        final trimmedHeadline = headline.trim();
+        final trimmedSubtext = subtext.trim();
+        final defaultSubtext = _defaultMessages()[i]?.first.subtext ?? '';
+
+        existingList.add(
+          ReassuranceData(
+            headline: trimmedHeadline,
+            subtext:
+                trimmedSubtext.isNotEmpty ? trimmedSubtext : defaultSubtext,
+            hasRecording: hasRecording,
+            recordingDurationSeconds:
+                hasRecording ? recordingDurationSeconds : 0,
+            recordingPath: hasRecording ? recordingPath : null,
+          ),
         );
       }
     }
