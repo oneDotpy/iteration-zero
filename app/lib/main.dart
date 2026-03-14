@@ -1,5 +1,6 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'theme/app_theme.dart';
 import 'app_state.dart';
 import 'screens/welcome_screen.dart';
@@ -47,3 +48,10 @@ class UnscriptedApp extends StatelessWidget {
     );
   }
 }
+
+// Preview for the welcome screen
+@Preview(
+  name: 'Welcome Screen',
+  size: Size(400, 750),
+)
+Widget welcomePreview() => const UnscriptedApp();

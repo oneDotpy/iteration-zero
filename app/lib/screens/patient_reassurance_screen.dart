@@ -17,6 +17,7 @@ class PatientReassuranceScreen extends StatefulWidget {
 class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   bool _isPlaying = false;
   Timer? _playTimer;
+  late final ReassuranceData _selectedMessage;
 
   static const _doneColors = [
     Color(0xFFFFDD8F), // dark yellow
@@ -48,6 +49,16 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    final idx = widget.situationIndex.clamp(0, 3);
+    _selectedMessage = AppState.getRandomMessageFor(
+      patientId: AppState.defaultPatientId,
+      situationIndex: idx,
+    );
+  }
+
+  @override
   void dispose() {
     _playTimer?.cancel();
     super.dispose();
@@ -56,7 +67,7 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   @override
   Widget build(BuildContext context) {
     final idx = widget.situationIndex.clamp(0, 3);
-    final data = AppState.getMessagesFor(AppState.defaultPatientId)[idx]!;
+    final data = _selectedMessage;
     final doneColor = _doneColors[idx];
     final backgroundColor = _backgroundColors[idx];
 

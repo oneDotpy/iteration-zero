@@ -16,9 +16,6 @@ class SendReassuranceScreen extends StatefulWidget {
 }
 
 class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
-  static const _lightYellow = Color(0xFFFFF8D9);
-  static const _darkYellow = Color(0xFFFFDD8F);
-  static const _lightRed = Color(0xFFFDEAEC);
 
   final _headlineController = TextEditingController();
   final _subtextController = TextEditingController();
@@ -38,6 +35,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
   final Set<int> _selectedSituations = {};
 
   bool _sent = false;
+  String? _validationMessage;
 
   static const _situations = [
     'Unsure about time',
@@ -100,12 +98,19 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
       _snack('Please select at least one patient.');
       return;
     }
-    if (_selectedSituations.isEmpty) {
-      _snack('Please select at least one situation.');
-      return;
-    }
-    if (_headlineController.text.trim().isEmpty) {
-      _snack('Please type a message.');
+    final missingSituation = _selectedSituations.isEmpty;
+    final missingMessage = _headlineController.text.trim().isEmpty;
+    if (missingSituation || missingMessage) {
+      setState(() {
+        if (missingSituation && missingMessage) {
+          _validationMessage =
+              'Please type a message and choose at least one situation.';
+        } else if (missingSituation) {
+          _validationMessage = 'Please choose at least one situation.';
+        } else {
+          _validationMessage = 'Please type a message.';
+        }
+      });
       return;
     }
     AppState.saveReassurance(
@@ -122,6 +127,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     _subtextController.clear();
     setState(() {
       _sent = true;
+      _validationMessage = null;
       _selectedPatientIds
         ..clear()
         ..add(AppState.defaultPatientId);
@@ -134,7 +140,10 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
   }
 
   void _resetForm() {
-    setState(() => _sent = false);
+    setState(() {
+      _sent = false;
+      _validationMessage = null;
+    });
   }
 
   void _snack(String msg) {
@@ -265,6 +274,11 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                     TextField(
                       controller: _headlineController,
                       maxLines: 2,
+                      onChanged: (_) {
+                        if (_validationMessage != null) {
+                          setState(() => _validationMessage = null);
+                        }
+                      },
                       decoration: _inputDecoration('Main message...'),
                     ),
                     const SizedBox(height: 10),
@@ -300,7 +314,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                           _RadioDot(selected: _addVoice),
                           const SizedBox(width: 12),
                           const Text(
-                            'Add a voice recording',
+                            'Add a voice recording (optional)',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -350,9 +364,12 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: GestureDetector(
-                          onTap: () => setState(() => sel
-                              ? _selectedSituations.remove(i)
-                              : _selectedSituations.add(i)),
+                          onTap: () => setState(() {
+                            sel
+                                ? _selectedSituations.remove(i)
+                                : _selectedSituations.add(i);
+                            _validationMessage = null;
+                          }),
                           child: Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
@@ -417,6 +434,40 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
               const SizedBox(height: 24),
 
+              if (!_sent && _validationMessage != null) ...[
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEBEE),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFF2B8BE)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Color(0xFFB3261E),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _validationMessage!,
+                          style: const TextStyle(
+                            color: Color(0xFFB3261E),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+
               // Save button / confirmation
               if (_sent) ...[
                 Container(
@@ -446,21 +497,59 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: _resetForm,
-                  child: const Center(
-                    child: Text(
-                      'Send another message',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.caregiverPrimary,
-                        fontWeight: FontWeight.w500,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppColors.caregiverPrimary,
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _resetForm,
+                        child: Container(
+                          constraints: const BoxConstraints(minHeight: 52),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: AppColors.caregiverPrimary,
+                              width: 1.4,
+                            ),
+                          ),
+                          child: const Text(
+                            'Send more',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: AppColors.caregiverPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          constraints: const BoxConstraints(minHeight: 52),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.caregiverPrimary,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [AppColors.cardShadow],
+                          ),
+                          child: const Text(
+                            'Done',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 4),
               ] else
                 GestureDetector(
                   onTap: _save,
@@ -681,12 +770,15 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                           size: 18,
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          _isPreviewPlaying ? 'Stop' : 'Preview',
-                          style: const TextStyle(
-                            color: AppColors.caregiverPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                        SizedBox(
+                          width: 56,
+                          child: Text(
+                            _isPreviewPlaying ? 'Stop' : 'Preview',
+                            style: const TextStyle(
+                              color: AppColors.caregiverPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],
