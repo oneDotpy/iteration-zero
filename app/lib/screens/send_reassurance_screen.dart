@@ -2,9 +2,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../widgets/soft_card.dart';
 import '../widgets/animated_waveform.dart';
+import '../widgets/primary_icon_button.dart';
+import '../widgets/primary_cta_button.dart';
+import 'send_reassurance_done_screen.dart';
 
 enum _RecordingState { idle, recording, saved }
 
@@ -42,13 +45,6 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     'Unsure about location',
     'Unsure about someone',
     'In any situation',
-  ];
-
-  static const _situationColors = [
-    AppColors.situationTime,
-    AppColors.situationLocation,
-    AppColors.situationPerson,
-    AppColors.situationConfused,
   ];
 
   void _startRecording() {
@@ -125,18 +121,13 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     _previewTimer?.cancel();
     _headlineController.clear();
     _subtextController.clear();
-    setState(() {
-      _sent = true;
-      _validationMessage = null;
-      _selectedPatientIds
-        ..clear()
-        ..add(AppState.defaultPatientId);
-      _selectedSituations.clear();
-      _addVoice = false;
-      _recordingState = _RecordingState.idle;
-      _recordingSeconds = 0;
-      _isPreviewPlaying = false;
-    });
+    final isCaregiver = AppState.loggedInRole == 'caregiver';
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SendReassuranceDoneScreen(isCaregiver: isCaregiver),
+      ),
+    );
   }
 
   void _resetForm() {
@@ -171,26 +162,25 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     return '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
   }
 
-  InputDecoration _inputDecoration(String hint) => InputDecoration(
+  InputDecoration _inputDecoration(String hint, AppColors colors) => InputDecoration(
         hintText: hint,
-        hintStyle:
-            TextStyle(color: AppColors.textMedium.withValues(alpha: 0.5)),
+        hintStyle: TextStyle(color: colors.textMed.withValues(alpha: 0.5)),
         filled: true,
-        fillColor: const Color(0xFFF7F9FB),
+        fillColor: colors.surfaceAlt.withValues(alpha: 0.4),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E7EE)),
+          borderSide: BorderSide(color: colors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E7EE)),
+          borderSide: BorderSide(color: colors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppColors.caregiverPrimary,
+          borderSide: BorderSide(
+            color: colors.rose,
             width: 1.5,
           ),
         ),
@@ -198,32 +188,34 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final situationColors = [
+      colors.teal,
+      colors.sage,
+      colors.rose,
+      colors.primary,
+    ];
+    final situationIconColors = [
+      colors.teal,
+      colors.sage,
+      colors.rose,
+      colors.primary,
+    ];
+
     return Scaffold(
-      backgroundColor: AppColors.appBackground,
+      backgroundColor: colors.roseLight,
       appBar: AppBar(
-        backgroundColor: AppColors.appBackground,
+        backgroundColor: colors.roseLight,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: GestureDetector(
+        leading: AppBackButton(
+          color: colors.rose,
           onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [AppColors.cardShadow],
-            ),
-            child: const Icon(
-              Icons.arrow_back_rounded,
-              color: AppColors.textDark,
-              size: 18,
-            ),
-          ),
         ),
-        title: const Text(
+        title: Text(
           'Send Reassurance',
           style: TextStyle(
-            color: AppColors.textDark,
+            color: colors.textHigh,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -237,21 +229,25 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Patient selector
-              SoftCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Who is this for?',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
+              SizedBox(
+                width: double.infinity,
+                child: SoftCard(
+                  color: colors.background,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Who is this for?',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: colors.textHigh,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildPatientChips(),
-                  ],
+                      const SizedBox(height: 12),
+                      _buildPatientChips(colors),
+                    ],
+                  ),
                 ),
               ),
 
@@ -259,33 +255,42 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
               // Message section
               SoftCard(
+                color: colors.background,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'What would you like to say?',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
+                        color: colors.textHigh,
                       ),
                     ),
                     const SizedBox(height: 14),
                     TextField(
                       controller: _headlineController,
                       maxLines: 2,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: colors.textHigh,
+                      ),
                       onChanged: (_) {
                         if (_validationMessage != null) {
                           setState(() => _validationMessage = null);
                         }
                       },
-                      decoration: _inputDecoration('Main message...'),
+                      decoration: _inputDecoration('Main message...', colors),
                     ),
                     const SizedBox(height: 10),
                     TextField(
                       controller: _subtextController,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: colors.textHigh,
+                      ),
                       decoration:
-                          _inputDecoration('Secondary line (optional)...'),
+                          _inputDecoration('Secondary line (optional)...', colors),
                     ),
                   ],
                 ),
@@ -295,6 +300,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
               // Voice recording section
               SoftCard(
+                color: colors.background,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -311,14 +317,14 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                       }),
                       child: Row(
                         children: [
-                          _RadioDot(selected: _addVoice),
+                          _RadioDot(selected: _addVoice, colors: colors),
                           const SizedBox(width: 12),
-                          const Text(
-                            'Add a voice recording (optional)',
+                          Text(
+                            'Add a voice recording',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textDark,
+                              color: colors.textHigh,
                             ),
                           ),
                         ],
@@ -326,7 +332,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                     ),
                     if (_addVoice) ...[
                       const SizedBox(height: 20),
-                      _buildRecordingSection(),
+                      _buildRecordingSection(colors),
                     ],
                   ],
                 ),
@@ -336,23 +342,24 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
               // Situation selector
               SoftCard(
+                color: colors.background,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'When should this be used?',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
+                        color: colors.textHigh,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Use this message when they are...',
                       style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textMedium,
+                        color: colors.textMed,
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -360,7 +367,8 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                       final i = e.key;
                       final label = e.value;
                       final sel = _selectedSituations.contains(i);
-                      final bgColor = _situationColors[i];
+                      final bgColor = situationColors[i];
+                      final iconColor = situationIconColors[i];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: GestureDetector(
@@ -370,7 +378,9 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                                 : _selectedSituations.add(i);
                             _validationMessage = null;
                           }),
-                          child: Container(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOut,
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -378,15 +388,9 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: sel
-                                  ? bgColor
-                                  : bgColor.withValues(alpha: 0.4),
+                                  ? bgColor.withValues(alpha: 0.58)
+                                  : bgColor.withValues(alpha: 0.24),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: sel
-                                    ? bgColor.withValues(alpha: 0.8)
-                                    : bgColor.withValues(alpha: 0.3),
-                                width: sel ? 1.5 : 1,
-                              ),
                             ),
                             child: Row(
                               children: [
@@ -396,27 +400,30 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: sel
-                                        ? AppColors.textDark
+                                        ? colors.textHigh
                                         : Colors.transparent,
                                     border: Border.all(
                                       color: sel
-                                          ? AppColors.textDark
-                                          : AppColors.textMedium
+                                          ? Colors.transparent
+                                          : colors.textMed
                                               .withValues(alpha: 0.4),
                                       width: 1.5,
                                     ),
                                   ),
                                   child: sel
-                                      ? const Icon(Icons.check,
-                                          size: 11, color: Colors.white)
+                                      ? Icon(
+                                          Icons.check,
+                                          size: 11,
+                                          color: iconColor,
+                                        )
                                       : null,
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
                                   label,
                                   style: TextStyle(
-                                    fontSize: 15,
-                                    color: AppColors.textDark,
+                                    fontSize: 16,
+                                    color: colors.textHigh,
                                     fontWeight: sel
                                         ? FontWeight.w600
                                         : FontWeight.w400,
@@ -440,23 +447,23 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFEBEE),
+                    color: colors.rose.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFF2B8BE)),
+                    border: Border.all(color: colors.rose.withValues(alpha: 0.35)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.error_outline,
-                        color: Color(0xFFB3261E),
+                        color: colors.rose,
                         size: 18,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _validationMessage!,
-                          style: const TextStyle(
-                            color: Color(0xFFB3261E),
+                          style: TextStyle(
+                            color: colors.rose,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -475,9 +482,9 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                   constraints: const BoxConstraints(minHeight: 60),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.sageGreen,
+                    color: colors.sage,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [AppColors.cardShadow],
+                    boxShadow: [colors.shadow],
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -506,18 +513,18 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                           constraints: const BoxConstraints(minHeight: 52),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: colors.rose.withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: AppColors.caregiverPrimary,
+                              color: colors.rose,
                               width: 1.4,
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Send more',
                             style: TextStyle(
-                              fontSize: 15,
-                              color: AppColors.caregiverPrimary,
+                              fontSize: 16,
+                              color: colors.rose,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -532,14 +539,14 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                           constraints: const BoxConstraints(minHeight: 52),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: AppColors.caregiverPrimary,
+                            color: colors.rose,
                             borderRadius: BorderRadius.circular(14),
-                            boxShadow: [AppColors.cardShadow],
+                            boxShadow: [colors.shadow],
                           ),
                           child: const Text(
                             'Done',
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 16,
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
                             ),
@@ -551,26 +558,12 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                 ),
                 const SizedBox(height: 4),
               ] else
-                GestureDetector(
+                PrimaryCtaButton(
+                  label: 'Send message',
                   onTap: _save,
-                  child: Container(
-                    width: double.infinity,
-                    constraints: const BoxConstraints(minHeight: 60),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.caregiverPrimary,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [AppColors.cardShadow],
-                    ),
-                    child: const Text(
-                      'Save message',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  color: colors.rose,
+                  textColor: Colors.white,
+                  height: 60,
                 ),
 
               const SizedBox(height: 32),
@@ -581,85 +574,89 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     );
   }
 
-  Widget _buildPatientChips() {
+  Widget _buildPatientChips(AppColors colors) {
     final patients = AppState.patients;
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: patients.map((p) {
-        final selected = _selectedPatientIds.contains(p.id);
-        return GestureDetector(
-          onTap: () => setState(() => selected
-              ? _selectedPatientIds.remove(p.id)
-              : _selectedPatientIds.add(p.id)),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-            decoration: BoxDecoration(
-              color: selected
-                  ? AppColors.caregiverPrimary
-                  : const Color(0xFFF0F4F8),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: selected
-                    ? AppColors.caregiverPrimary
-                    : const Color(0xFFD8E2EC),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (selected) ...[
-                  const Icon(Icons.check, color: Colors.white, size: 14),
-                  const SizedBox(width: 5),
-                ],
-                Text(
-                  p.name,
-                  style: TextStyle(
-                    color: selected ? Colors.white : AppColors.textDark,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
+      alignment: WrapAlignment.start,
+      spacing: 10,
+      runSpacing: 10,
+      children: patients
+          .map((p) => _buildPatientChip(colors: colors, patient: p))
+          .toList(),
     );
   }
 
-  Widget _buildRecordingSection() {
+  Widget _buildPatientChip({
+    required AppColors colors,
+    required PatientProfile patient,
+  }) {
+    final selected = _selectedPatientIds.contains(patient.id);
+    return GestureDetector(
+      onTap: () => setState(() => selected
+          ? _selectedPatientIds.remove(patient.id)
+          : _selectedPatientIds.add(patient.id)),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? colors.rose : colors.roseLight,
+          borderRadius: BorderRadius.circular(20),
+          // No border for any state
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (selected)
+              const SizedBox(
+                width: 14,
+                child: Icon(Icons.check, color: Colors.white, size: 14),
+              ),
+            if (selected) const SizedBox(width: 6),
+            Text(
+              patient.name,
+              style: TextStyle(
+                color: selected ? Colors.white : colors.textHigh,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecordingSection(AppColors colors) {
     switch (_recordingState) {
       case _RecordingState.idle:
         return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedWaveform(
-                isActive: false,
-                color: AppColors.textMedium.withValues(alpha: 0.4)),
+                isActive: false, color: colors.textMed.withValues(alpha: 0.4)),
             const SizedBox(height: 16),
             Center(
               child: GestureDetector(
                 onTap: _startRecording,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEF0F0),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: Colors.redAccent.withValues(alpha: 0.4)),
+                    color: colors.rose.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colors.rose.withOpacity(0.4)),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.mic, color: Colors.redAccent, size: 20),
-                      SizedBox(width: 8),
+                      Icon(Icons.mic, color: colors.rose, size: 18),
+                      const SizedBox(width: 6),
                       Text(
                         'Start recording',
                         style: TextStyle(
-                          color: Colors.redAccent,
+                          color: colors.rose,
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -672,48 +669,47 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
       case _RecordingState.recording:
         return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _PulsingDot(),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Text(
                   'Recording... $_timerLabel',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
-                    color: Colors.redAccent,
+                    color: colors.rose,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 14),
-            AnimatedWaveform(isActive: true, color: Colors.redAccent),
+            AnimatedWaveform(isActive: true, color: colors.rose),
             const SizedBox(height: 16),
             Center(
               child: GestureDetector(
                 onTap: _stopRecording,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEF0F0),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color: Colors.redAccent.withValues(alpha: 0.4)),
+                    color: colors.rose.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colors.rose.withOpacity(0.4)),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.stop, color: Colors.redAccent, size: 20),
-                      SizedBox(width: 8),
+                      Icon(Icons.stop, color: colors.rose, size: 18),
+                      const SizedBox(width: 6),
                       Text(
                         'Stop',
                         style: TextStyle(
-                          color: Colors.redAccent,
+                          color: colors.rose,
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -726,25 +722,26 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
       case _RecordingState.saved:
         return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.check_circle,
-                    color: AppColors.sageGreen, size: 18),
+                Icon(Icons.check_circle, color: colors.sage, size: 18),
                 const SizedBox(width: 6),
                 Text(
                   'Recording saved ($_timerLabel)',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.sageGreen,
+                    color: colors.sage,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 14),
-            AnimatedWaveform(isActive: _isPreviewPlaying),
+            // Waveform animates when previewing
+            AnimatedWaveform(isActive: _isPreviewPlaying, color: colors.rose),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -752,33 +749,34 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                 GestureDetector(
                   onTap: _togglePreview,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: AppColors.caregiverLightBg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                          color: AppColors.caregiverPrimary
-                              .withValues(alpha: 0.4)),
-                    ),
+                    constraints: const BoxConstraints(minWidth: 120),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    decoration: _isPreviewPlaying
+                        ? BoxDecoration(
+                            color: colors.rose.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: colors.rose.withOpacity(0.4)),
+                          )
+                        : BoxDecoration(
+                            color: colors.rose,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           _isPreviewPlaying ? Icons.stop : Icons.play_arrow,
-                          color: AppColors.caregiverPrimary,
+                          color: _isPreviewPlaying ? colors.rose : Colors.white,
                           size: 18,
                         ),
                         const SizedBox(width: 6),
-                        SizedBox(
-                          width: 56,
-                          child: Text(
-                            _isPreviewPlaying ? 'Stop' : 'Preview',
-                            style: const TextStyle(
-                              color: AppColors.caregiverPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        Text(
+                          _isPreviewPlaying ? 'Stop' : 'Preview',
+                          style: TextStyle(
+                            color: _isPreviewPlaying ? colors.rose : Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -789,24 +787,23 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                 GestureDetector(
                   onTap: _reRecord,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
+                    constraints: const BoxConstraints(minWidth: 120),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFEF0F0),
+                      color: colors.rose.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                          color: Colors.redAccent.withValues(alpha: 0.3)),
+                      border: Border.all(color: colors.rose.withOpacity(0.3)),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.mic, color: Colors.redAccent, size: 18),
-                        SizedBox(width: 6),
+                        Icon(Icons.mic, color: colors.rose, size: 18),
+                        const SizedBox(width: 6),
                         Text(
                           'Re-record',
                           style: TextStyle(
-                            color: Colors.redAccent,
-                            fontSize: 14,
+                            color: colors.rose,
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -824,7 +821,8 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
 class _RadioDot extends StatelessWidget {
   final bool selected;
-  const _RadioDot({required this.selected});
+  final AppColors colors;
+  const _RadioDot({required this.selected, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -834,23 +832,21 @@ class _RadioDot extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: selected
-              ? AppColors.caregiverPrimary
-              : const Color(0xFFBEC8D2),
+          color: selected ? colors.rose : colors.textMed.withValues(alpha: 0.5),
           width: 1.5,
         ),
         color: selected
-            ? AppColors.caregiverPrimary.withValues(alpha: 0.1)
-            : Colors.white,
+            ? colors.rose.withValues(alpha: 0.1)
+            : colors.background,
       ),
       child: selected
           ? Center(
               child: Container(
                 width: 11,
                 height: 11,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.caregiverPrimary,
+                  color: colors.rose,
                 ),
               ),
             )
@@ -885,9 +881,9 @@ class _PulsingDotState extends State<_PulsingDot>
         child: Container(
           width: 10,
           height: 10,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.redAccent,
+            color: context.appColors.rose,
           ),
         ),
       );

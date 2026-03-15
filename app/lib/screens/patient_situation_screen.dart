@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../widgets/voice_input_bar.dart';
+import '../widgets/primary_icon_button.dart';
 import 'patient_reassurance_screen.dart';
 
 class PatientSituationScreen extends StatelessWidget {
@@ -37,13 +38,13 @@ class PatientSituationScreen extends StatelessWidget {
   Color _situationColor(AppColors colors, int key) {
     switch (key) {
       case 0:
-        return colors.situationTimeBg;
+        return colors.teal.withValues(alpha: 0.58);
       case 1:
-        return colors.situationLocationBg;
+        return colors.sage.withValues(alpha: 0.58);
       case 2:
-        return colors.situationPersonBg;
+        return colors.rose.withValues(alpha: 0.58)  ;
       default:
-        return colors.situationConfusedBg;
+        return colors.primary.withValues(alpha: 0.58);
     }
   }
 
@@ -53,33 +54,21 @@ class PatientSituationScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colors.roseLight,
+      appBar: AppBar(
+        backgroundColor: colors.roseLight,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: AppBackButton(
+          color: colors.rose,
+          onTap: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Back button
-              Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: colors.surface.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [colors.shadow],
-                    ),
-                    child: Icon(
-                      Icons.arrow_back_rounded,
-                      color: colors.textHigh,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
 
               const SizedBox(height: 28),
 
@@ -127,7 +116,7 @@ class PatientSituationScreen extends StatelessWidget {
                             child: Text(
                               s.label,
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w600,
                                 color: colors.textHigh,
                               ),

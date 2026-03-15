@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/breathing_circle.dart';
+import '../widgets/primary_icon_button.dart';
 import 'breathing_done_screen.dart';
 
 enum _Phase { inhale, hold, exhale }
@@ -18,8 +19,6 @@ class BreathingScreen extends StatefulWidget {
 
 class _BreathingScreenState extends State<BreathingScreen>
     with SingleTickerProviderStateMixin {
-  static const _lightBlue = Color(0xFFE2EEFE);
-  static const _darkBlue = Color(0xFF9CC1FD);
 
   _Phase _phase = _Phase.inhale;
   int _cyclesCompleted = 0;
@@ -99,11 +98,11 @@ class _BreathingScreenState extends State<BreathingScreen>
   String get _phaseHint {
     switch (_phase) {
       case _Phase.inhale:
-        return 'breathe in slowly...';
+        return 'Slowly...';
       case _Phase.hold:
-        return 'hold gently...';
+        return 'You got this!';
       case _Phase.exhale:
-        return 'breathe out slowly...';
+        return 'You\'re doing great!';
     }
   }
 
@@ -128,8 +127,8 @@ class _BreathingScreenState extends State<BreathingScreen>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final primaryColor = widget.isCaregiver ? colors.primary : colors.rose;
-    final bgColor = widget.isCaregiver ? colors.primaryLight : colors.roseLight;
+    final primaryColor = colors.primary;
+    final bgColor = colors.primaryLight;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -138,25 +137,12 @@ class _BreathingScreenState extends State<BreathingScreen>
           children: [
             // Back button row
             Padding(
-              padding: const EdgeInsets.only(left: 16, top: 8),
+              padding: const EdgeInsets.only(left: 16, top: 16),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: GestureDetector(
+                child: AppBackButton(
+                  color: colors.primary,
                   onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: colors.surface.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [colors.shadow],
-                    ),
-                    child: Icon(
-                      Icons.arrow_back_rounded,
-                      color: colors.textHigh,
-                      size: 20,
-                    ),
-                  ),
                 ),
               ),
             ),
@@ -174,9 +160,20 @@ class _BreathingScreenState extends State<BreathingScreen>
               ),
             ),
 
-            const Spacer(flex: 1),
+            const SizedBox(height: 0),
 
-            // Breathing circle — uses BreathingCircle widget driven by phase
+            // Phase hint text
+            Text(
+              _phaseHint,
+              style: TextStyle(
+                fontSize: 15,
+                color: colors.textMed.withValues(alpha: 0.5),
+              ),
+            ),
+
+            const SizedBox(height: 60),
+
+            // Breathing circle — uses BreathingCircle widget driven by phase, no wind icon
             BreathingCircle(
               phase: _breathPhase,
               primaryColor: primaryColor,
@@ -184,18 +181,6 @@ class _BreathingScreenState extends State<BreathingScreen>
             ),
 
             const Spacer(flex: 2),
-
-            // Phase hint text
-            Text(
-              _phaseHint,
-              style: TextStyle(
-                fontSize: 15,
-                color: colors.textMed.withValues(alpha: 0.7),
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-
-            const SizedBox(height: 24),
 
             // Cycle dots
             Row(

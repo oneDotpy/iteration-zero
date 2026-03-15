@@ -11,6 +11,7 @@ final themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
 final settingsNotifier = ValueNotifier<int>(0);
 
 void main() {
+  AppSettings.loadForCurrentAccount();
   runApp(const UnscriptedApp());
 }
 
@@ -26,11 +27,30 @@ class UnscriptedApp extends StatelessWidget {
         return ValueListenableBuilder<int>(
           valueListenable: settingsNotifier,
           builder: (context, settingsCount, settingsChild) {
+            final reducedMotion = AppSettings.reducedMotion;
             return MaterialApp(
               title: '[un]scripted',
               debugShowCheckedModeBanner: false,
-              theme: AppTheme.light(),
-              darkTheme: AppTheme.dark(),
+              theme: reducedMotion
+                  ? AppTheme.light().copyWith(
+                      pageTransitionsTheme: PageTransitionsTheme(
+                        builders: {
+                          for (final platform in TargetPlatform.values)
+                            platform: _NoAnimationPageTransitionsBuilder(),
+                        },
+                      ),
+                    )
+                  : AppTheme.light(),
+              darkTheme: reducedMotion
+                  ? AppTheme.dark().copyWith(
+                      pageTransitionsTheme: PageTransitionsTheme(
+                        builders: {
+                          for (final platform in TargetPlatform.values)
+                            platform: _NoAnimationPageTransitionsBuilder(),
+                        },
+                      ),
+                    )
+                  : AppTheme.dark(),
               themeMode: mode,
               home: const WelcomeScreen(),
               builder: (context, child) {
@@ -46,6 +66,27 @@ class UnscriptedApp extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+// Custom PageTransitionsBuilder that disables transitions if reduced motion is enabled.
+class _NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _NoAnimationPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (AppSettings.reducedMotion) {
+      return child;
+    }
+    // Use the default Material fade upwards transition for non-reduced motion
+    return const FadeUpwardsPageTransitionsBuilder()
+        .buildTransitions(route, context, animation, secondaryAnimation, child);
   }
 }
 

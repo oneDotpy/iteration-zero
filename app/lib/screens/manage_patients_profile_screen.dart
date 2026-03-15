@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../widgets/primary_cta_button.dart';
+import '../widgets/primary_icon_button.dart';
+import '../theme/app_colors.dart';
 import '../app_state.dart';
 
 class ManagePatientsProfileScreen extends StatefulWidget {
@@ -15,30 +18,30 @@ class ManagePatientsProfileScreen extends StatefulWidget {
 }
 
 class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScreen> {
-	static const _lightPink = Color(0xFFFDEAEC);
-	static const _darkPink = Color(0xFFFFC5CA);
 
 	void _showEditDialog() {
 		final patient = widget.patient;
+		final colors = context.appColors;
 		final nameController = TextEditingController(text: patient.name);
 		final notesController = TextEditingController(text: patient.notes);
 
 		showDialog(
 			context: context,
 			builder: (ctx) => AlertDialog(
+				backgroundColor: colors.background,
 				title: const Text('Edit patient'),
 				content: Column(
 					mainAxisSize: MainAxisSize.min,
 					children: [
 						TextField(
 							controller: nameController,
-							decoration: _inputDecoration('Name'),
+							decoration: _inputDecoration('Name', colors),
 							textCapitalization: TextCapitalization.words,
 						),
 						const SizedBox(height: 12),
 						TextField(
 							controller: notesController,
-							decoration: _inputDecoration('Notes (optional)'),
+							decoration: _inputDecoration('Notes (optional)', colors),
 							maxLines: 2,
 						),
 					],
@@ -51,11 +54,14 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 								Navigator.pop(ctx);
 								if (mounted) Navigator.pop(context, true);
 							},
-							child: const Text('Remove', style: TextStyle(color: Colors.red)),
+							child: Text('Remove', style: TextStyle(color: colors.rose)),
 						),
 					TextButton(
 						onPressed: () => Navigator.pop(ctx),
-						child: const Text('Cancel', style: TextStyle(color: Colors.black45)),
+						child: Text(
+							'Cancel',
+							style: TextStyle(color: colors.teal),
+						),
 					),
 					FilledButton(
 						onPressed: () {
@@ -67,8 +73,14 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 							setState(() {});
 						},
 						style: FilledButton.styleFrom(
-							backgroundColor: Colors.black,
-							foregroundColor: Colors.white,
+							backgroundColor: colors.teal,
+							foregroundColor: colors.surface,
+							elevation: 0,
+							shadowColor: Colors.transparent,
+							shape: RoundedRectangleBorder(
+								borderRadius: BorderRadius.circular(16),
+							),
+							padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
 						),
 						child: const Text('Save'),
 					),
@@ -80,58 +92,69 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 	@override
 	Widget build(BuildContext context) {
 		final patient = widget.patient;
+		final colors = context.appColors;
 
 		return Scaffold(
 			body: SafeArea(
+				top: true,
+				bottom: false,
 				child: Column(
 					crossAxisAlignment: CrossAxisAlignment.stretch,
 					children: [
+						// Fill the top SafeArea (dynamic island) with tealLight
+						Container(
+							color: colors.tealLight,
+							height: MediaQuery.of(context).padding.top,
+						),
 						Container(
 							width: double.infinity,
-							decoration: const BoxDecoration(
-								color: _lightPink,
-								borderRadius: BorderRadius.only(
+							decoration: BoxDecoration(
+								color: colors.tealLight,
+								borderRadius: const BorderRadius.only(
 									bottomLeft: Radius.circular(20),
 									bottomRight: Radius.circular(20),
 								),
+								boxShadow: [
+									BoxShadow(
+										color: Colors.black.withOpacity(0.10),
+										blurRadius: 18,
+										offset: const Offset(0, 8),
+									),
+								],
 							),
-							padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+							padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
 							child: Column(
 								children: [
 									Row(
 										mainAxisAlignment: MainAxisAlignment.spaceBetween,
 										children: [
-											IconButton.filled(
-												icon: const Icon(Icons.arrow_back),
-												onPressed: () => Navigator.pop(context),
-												padding: EdgeInsets.zero,
-												style: IconButton.styleFrom(
-													backgroundColor: _darkPink,
-													foregroundColor: Colors.black,
-												),
+											
+											AppBackButton(
+												onTap: () => Navigator.pop(context),
+												color: colors.teal,
+												size: 32,
+												icon: Icons.arrow_back_rounded,
 											),
-											IconButton.filled(
-												onPressed: _showEditDialog,
-												icon: const Icon(Icons.edit_outlined, size: 18),
-												style: IconButton.styleFrom(
-													backgroundColor: _darkPink,
-													foregroundColor: Colors.black,
-												),
+											AppBackButton(
+												onTap: _showEditDialog,
+												color: colors.teal,
+												size: 32,
+												icon: Icons.edit_outlined,
 											),
 										],
 									),
 									const SizedBox(height: 24),
 									CircleAvatar(
 										radius: 60,
-										backgroundColor: Colors.white,
+										backgroundColor: colors.surface,
 										child: Text(
 											patient.name.isNotEmpty
 													? patient.name[0].toUpperCase()
 													: '?',
-											style: const TextStyle(
+											style: TextStyle(
 												fontSize: 44,
 												fontWeight: FontWeight.bold,
-												color: Colors.black,
+												color: colors.teal,
 											),
 										),
 									),
@@ -156,27 +179,19 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 										Text(
 											patient.notes.isEmpty ? 'No notes yet.' : patient.notes,
 											textAlign: TextAlign.center,
-											style: const TextStyle(
+											style: TextStyle(
 												fontSize: 18,
-												color: Colors.black54,
+												color: colors.textMed,
 												height: 1.4,
 											),
 										),
 										const Spacer(),
 										Center(
 											child: SizedBox(
-												width: 200,
-												child: FilledButton(
-												onPressed: () => Navigator.pop(context),
-												style: FilledButton.styleFrom(
-													padding: const EdgeInsets.symmetric(vertical: 18),
-													backgroundColor: _darkPink,
-													foregroundColor: Colors.black,
-													shape: RoundedRectangleBorder(
-														borderRadius: BorderRadius.circular(12),
-													),
-												),
-												child: const Text('Done', style: TextStyle(fontSize: 16)),
+												child: PrimaryCtaButton(
+													label: 'Done',
+													onTap: () => Navigator.pop(context),
+													color: colors.teal,
 												),
 											),
 										),
@@ -191,24 +206,24 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 		);
 	}
 
-	InputDecoration _inputDecoration(String hint) => InputDecoration(
+	InputDecoration _inputDecoration(String hint, AppColors colors) => InputDecoration(
 				hintText: hint,
-				hintStyle: const TextStyle(color: Colors.black26),
+				hintStyle: TextStyle(color: colors.textLow),
 				filled: true,
-				fillColor: Colors.grey[100],
+				fillColor: colors.surfaceAlt.withValues(alpha: 0.4),
 				contentPadding:
 						const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
 				border: OutlineInputBorder(
 					borderRadius: BorderRadius.circular(10),
-					borderSide: const BorderSide(color: Colors.black26),
+					borderSide: BorderSide(color: colors.border),
 				),
 				enabledBorder: OutlineInputBorder(
 					borderRadius: BorderRadius.circular(10),
-					borderSide: const BorderSide(color: Colors.black26),
+					borderSide: BorderSide(color: colors.border),
 				),
 				focusedBorder: OutlineInputBorder(
 					borderRadius: BorderRadius.circular(10),
-					borderSide: const BorderSide(color: Colors.black, width: 1.5),
+					borderSide: BorderSide(color: colors.teal, width: 2),
 				),
 			);
 }

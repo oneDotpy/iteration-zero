@@ -2,8 +2,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../widgets/animated_waveform.dart';
+import '../widgets/primary_cta_button.dart';
+import '../widgets/primary_icon_button.dart';
 
 class PatientReassuranceScreen extends StatefulWidget {
   final int situationIndex;
@@ -18,20 +20,6 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   bool _isPlaying = false;
   Timer? _playTimer;
   late final ReassuranceData _selectedMessage;
-
-  static const _doneColors = [
-    Color(0xFFFFDD8F), // dark yellow
-    Color(0xFFFFC5CA), // dark pink
-    Color(0xFFABEB96), // dark green
-    Color(0xFF9CC1FD), // dark blue
-  ];
-
-  static const _backgroundColors = [
-    Color(0xFFFFF8D9), // light yellow
-    Color(0xFFFDEAEC), // light pink
-    Color(0xFFE8FFD9), // light green
-    Color(0xFFE2EEFE), // light blue
-  ];
 
   void _togglePlay([ReassuranceData? data]) {
     if (_isPlaying) {
@@ -68,37 +56,49 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
   Widget build(BuildContext context) {
     final idx = widget.situationIndex.clamp(0, 3);
     final data = _selectedMessage;
-    final doneColor = _doneColors[idx];
-    final backgroundColor = _backgroundColors[idx];
+    final colors = context.appColors;
+    // Situation color mapping: 0=time, 1=location, 2=someone, 3=other
+    final List<Color> situationColors = [
+      colors.teal,      // time
+      colors.sage,      // location
+      colors.rose,      // someone
+      colors.primary,   // other
+    ];
+    final situationColor = situationColors[idx];
+    // Situation background color mapping: 0=time, 1=location, 2=someone, 3=other
+    final List<Color> situationBgColors = [
+      colors.tealLight,      // time
+      colors.sageLight,  // location
+      colors.roseLight,    // someone
+      colors.primaryLight,  // other
+    ];
+    final situationBgColor = situationBgColors[idx];
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: situationBgColor,
+      appBar: AppBar(
+        backgroundColor: situationBgColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: AppBackButton(
+          color: situationColor,
+          onTap: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton.filled(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.pop(context),
-                  padding: EdgeInsets.zero,
-                  style: IconButton.styleFrom(
-                    backgroundColor: doneColor,
-                    foregroundColor: Colors.black,
-                  ),
-                ),
-              ),
               const Spacer(),
               Text(
                 data.headline,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 32,
+                style: TextStyle(
+                  fontSize: 36,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+                  color: colors.textHigh,
                   height: 1.25,
                 ),
               ),
@@ -106,58 +106,52 @@ class _PatientReassuranceScreenState extends State<PatientReassuranceScreen> {
               Text(
                 data.subtext,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 20, color: AppColors.textMedium, height: 1.4),
+                style: TextStyle(
+                    fontSize: 24, color: colors.textMed, height: 1.4),
               ),
               const Spacer(),
 
               // Play button
               Center(
                 child: Material(
-                  color: doneColor,
+                  color: situationColor,
                   shape: const CircleBorder(),
                   child: InkWell(
                     onTap: () => _togglePlay(data),
                     customBorder: const CircleBorder(),
                     child: SizedBox(
-                      width: 80,
-                      height: 80,
+                      width: 120,
+                      height: 120,
                       child: Icon(
                         _isPlaying ? Icons.stop : Icons.play_arrow,
-                        size: 40,
+                        size: 60,
                       ),
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 24),
-              AnimatedWaveform(isActive: _isPlaying),
+              const SizedBox(height: 48),
+              AnimatedWaveform(isActive: _isPlaying, color: colors.textHigh),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 48),
               Center(
                 child: SizedBox(
                   width: 200,
-                  child: FilledButton(
-                    onPressed: () => Navigator.popUntil(
-                      context,
-                      (route) => route.settings.name == 'patientHome' || route.isFirst,
-                    ),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: doneColor,
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Done',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
+                  child: PrimaryCtaButton(
+                    label: 'Done',
+                    onTap: () {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        Navigator.popUntil(
+                          context,
+                          (route) => route.settings.name == 'patientHome' || route.isFirst,
+                        );
+                      });
+                    },
+                    color: situationColor,
+                    textColor: Colors.white,
+                    height: 56,
                   ),
                 ),
               ),

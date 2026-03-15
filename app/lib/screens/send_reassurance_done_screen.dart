@@ -1,38 +1,39 @@
-// lib/screens/guidance_done_screen.dart
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../widgets/primary_cta_button.dart';
-import 'guidance_topic_screen.dart';
+import 'send_reassurance_screen.dart';
 
-class GuidanceDoneScreen extends StatelessWidget {
-  const GuidanceDoneScreen({super.key});
+class SendReassuranceDoneScreen extends StatelessWidget {
+  final bool isCaregiver;
+  const SendReassuranceDoneScreen({super.key, required this.isCaregiver});
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final rose = colors.rose;
+    final bgColor = colors.roseLight;
 
     return Scaffold(
-      backgroundColor: colors.sageLight,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-
               const Spacer(flex: 2),
 
-              // Sage check circle
+              // Icon circle
               Container(
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: colors.sage.withValues(alpha: 0.15),
+                  color: rose.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.check_circle_outline_rounded,
-                  color: colors.sage,
+                  color: rose,
                   size: 56,
                 ),
               ),
@@ -40,7 +41,7 @@ class GuidanceDoneScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               Text(
-                'Happy to help.',
+                'Message sent!',
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w700,
@@ -52,7 +53,7 @@ class GuidanceDoneScreen extends StatelessWidget {
               const SizedBox(height: 10),
 
               Text(
-                "You're doing great.",
+                'Your reassurance is on its way.',
                 style: TextStyle(
                   fontSize: 17,
                   color: colors.textMed,
@@ -62,18 +63,18 @@ class GuidanceDoneScreen extends StatelessWidget {
 
               const Spacer(flex: 2),
 
-              // Get more guidance
+              // Send another button
               PrimaryCtaButton(
-                label: 'Get more guidance',
+                label: 'Send another',
                 onTap: () {
                   Navigator.of(context).popUntil((r) => r.isFirst);
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const GuidanceTopicScreen(),
+                      builder: (_) => const SendReassuranceScreen(),
                     ),
                   );
                 },
-                color: colors.sage,
+                color: rose,
               ),
 
               const SizedBox(height: 12),
@@ -83,7 +84,7 @@ class GuidanceDoneScreen extends StatelessWidget {
                 label: 'Home',
                 onTap: () => Navigator.of(context).popUntil((r) => r.isFirst),
                 isOutlined: true,
-                color: colors.sage,
+                color: rose,
               ),
 
               const Spacer(flex: 1),

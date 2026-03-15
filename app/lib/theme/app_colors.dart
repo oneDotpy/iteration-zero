@@ -11,6 +11,11 @@ class AppColors {
   final Color rose;
   final Color roseLight;
   final Color sage;
+  final Color sageLight;
+  final Color teal;
+  final Color tealLight;
+  final Color softPurple;
+  final Color softPurpleLight;
   final Color textHigh;
   final Color textMed;
   final Color textLow;
@@ -31,6 +36,11 @@ class AppColors {
     required this.rose,
     required this.roseLight,
     required this.sage,
+    required this.sageLight,
+    required this.teal,
+    required this.tealLight,
+    required this.softPurple,
+    required this.softPurpleLight,
     required this.textHigh,
     required this.textMed,
     required this.textLow,
@@ -49,34 +59,44 @@ class AppColors {
         offset: const Offset(0, 4),
       );
 
-  static AppColors light() => const AppColors(
-        background: Color(0xFFF7F5F2),
-        surface: Colors.white,
-        surfaceAlt: Color(0xFFF0EDE8),
-        primary: Color(0xFF7BA7BC),
-        primaryLight: Color(0xFFE8F2F8),
-        rose: Color(0xFFCB9A8E),
-        roseLight: Color(0xFFFFF8F5),
-        sage: Color(0xFF8BAF8E),
-        textHigh: Color(0xFF2C2C2C),
-        textMed: Color(0xFF6B7280),
-        textLow: Color(0xFFADB5BD),
-        border: Color(0xFFE8E2DC),
-        situationTimeBg: Color(0xFFFFF3C8),
-        situationLocationBg: Color(0xFFDCEEDC),
-        situationPersonBg: Color(0xFFEBDBF0),
-        situationConfusedBg: Color(0xFFD4E8F5),
+    static AppColors light() => const AppColors(
+      background: Color.fromARGB(255, 250, 249, 243),
+      surface: Colors.white,
+      surfaceAlt: Color(0xFFE7E1CF),
+      primary: Color(0xFF7E99B4),
+      primaryLight: Color(0xFFE4ECF4),
+      rose: Color(0xFFCE9482),
+      roseLight: Color.fromARGB(255, 242, 231, 225),
+      sage: Color(0xFFB0C29D),
+      sageLight: Color.fromARGB(255, 231, 238, 224),
+      teal: Color(0xFF8FB0A3),
+      tealLight: Color.fromARGB(255, 227, 239, 231),
+      softPurple: Color(0xFF9B8EC4),
+      softPurpleLight: Color(0xFFF1EDFA),
+      textHigh: Color(0xFF3F4A3C),
+      textMed: Color(0xFF6B7566),
+      textLow: Color(0xFF98A28F),
+      border: Color(0xFFDAD4C1),
+      situationTimeBg: Color(0xFFE3F0EC),
+      situationLocationBg: Color(0xFFE7EEDD),
+      situationPersonBg: Color(0xFFF2E5E1),
+      situationConfusedBg: Color(0xFFE4ECF4),
       );
 
   static AppColors dark() => const AppColors(
         background: Color(0xFF16181C),
         surface: Color(0xFF22262E),
         surfaceAlt: Color(0xFF2A2F39),
-        primary: Color(0xFF89B8D0),
-        primaryLight: Color(0xFF1C2E3A),
-        rose: Color(0xFFD4A89E),
-        roseLight: Color(0xFF2D2018),
-        sage: Color(0xFF9DC9A0),
+        primary: Color.fromARGB(255, 67, 105, 139),
+        primaryLight: Color.fromARGB(255, 29, 36, 42),
+        rose: Color.fromARGB(255, 146, 81, 61),
+        roseLight: Color.fromARGB(255, 34, 30, 30),
+        sage: Color.fromARGB(255, 99, 118, 79),
+        sageLight: Color.fromARGB(255, 28, 34, 30),
+        teal: Color.fromARGB(255, 64, 104, 88),
+        tealLight: Color.fromARGB(255, 27, 34, 36),
+        softPurple: Color(0xFF9B8EC4),
+        softPurpleLight: Color(0xFFF1EDFA),
         textHigh: Color(0xFFF0EDE8),
         textMed: Color(0xFFA0A8B0),
         textLow: Color(0xFF5A6070),
@@ -91,11 +111,16 @@ class AppColors {
         background: Color(0xFFFFFFFF),
         surface: Color(0xFFFFFFFF),
         surfaceAlt: Color(0xFFEEEEEE),
-        primary: Color(0xFF004E8C),
-        primaryLight: Color(0xFFCCE5FF),
-        rose: Color(0xFF8B0000),
-        roseLight: Color(0xFFFFE0E0),
-        sage: Color(0xFF1A5C1E),
+        primary: Color.fromARGB(255, 48, 82, 151),
+        primaryLight: Color.fromARGB(255, 251, 253, 255),
+        rose: Color.fromARGB(255, 149, 48, 18),
+        roseLight: Color.fromARGB(255, 255, 248, 248),
+        sage: Color.fromARGB(255, 57, 123, 46),
+        sageLight: Color.fromARGB(255, 246, 253, 246),
+        teal: Color.fromARGB(255, 30, 132, 108),
+        tealLight: Color.fromARGB(255, 249, 255, 254),
+        softPurple: Color(  0xFF9B8EC4),
+        softPurpleLight: Color(0xFFF1EDFA),
         textHigh: Color(0xFF000000),
         textMed: Color(0xFF1A1A1A),
         textLow: Color(0xFF444444),
@@ -108,23 +133,22 @@ class AppColors {
 
   // ── Backwards-compat static constants (light values) ──────────────────────
   // Referenced by the protected screens that must not be modified.
-  static const caregiverPrimary = Color(0xFF7BA7BC);
-  static const caregiverLightBg = Color(0xFFE8F2F8);
-  static const patientPrimary = Color(0xFFCB9A8E);
-  static const patientLightBg = Color(0xFFFFF8F5);
-  static const sageGreen = Color(0xFF8BAF8E);
-  static const textDark = Color(0xFF2C2C2C);
-  static const textMedium = Color(0xFF6B7280);
-  static const appBackground = Color(0xFFF7F5F2);
+  static const caregiverPrimary = Color(0xFF7E99B4);
+  static const caregiverLightBg = Color(0xFFE4ECF4);
+  static const patientPrimary = Color(0xFFCE9482);
+  static const patientLightBg = Color(0xFFF2E5E1);
+  static const sageGreen = Color(0xFFB0C29D);
+  static const textDark = Color(0xFF3F4A3C);
+  static const textMedium = Color(0xFF6B7566);
+  static const appBackground = Color(0xFFF3EEDC);
   static const cardWhite = Color(0xFFFFFFFF);
-  static const softPurple = Color(0xFF9B8EC4);
   static const caregiverCard = Color(0xFFFFFFFF);
 
   // Static situation color constants (light values)
-  static const situationTime = Color(0xFFFFF3C8);
-  static const situationLocation = Color(0xFFDCEEDC);
-  static const situationPerson = Color(0xFFEBDBF0);
-  static const situationConfused = Color(0xFFD4E8F5);
+  static const situationTime = Color(0xFFE3F0EC);
+  static const situationLocation = Color(0xFFE7EEDD);
+  static const situationPerson = Color(0xFFF2E5E1);
+  static const situationConfused = Color(0xFFE4ECF4);
 
   // Static card shadow — used by existing screens as `AppColors.cardShadow`
   static BoxShadow get cardShadow => BoxShadow(
