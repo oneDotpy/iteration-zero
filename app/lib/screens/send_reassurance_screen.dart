@@ -630,23 +630,169 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
   Widget _buildRecordingSection(AppColors colors) {
     switch (_recordingState) {
       case _RecordingState.idle:
-        return SizedBox(
-          height: 130,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedWaveform(
-                  isActive: false, color: colors.textMed.withValues(alpha: 0.4)),
-              const SizedBox(height: 16),
-              Center(
-                child: GestureDetector(
-                  onTap: _startRecording,
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedWaveform(
+                isActive: false, color: colors.textMed.withValues(alpha: 0.4)),
+            const SizedBox(height: 16),
+            Center(
+              child: GestureDetector(
+                onTap: _startRecording,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: colors.rose.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colors.rose.withOpacity(0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.mic, color: colors.rose, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Start recording',
+                        style: TextStyle(
+                          color: colors.rose,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+
+      case _RecordingState.recording:
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _PulsingDot(),
+                const SizedBox(width: 6),
+                Text(
+                  'Recording... $_timerLabel',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: colors.rose,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            AnimatedWaveform(isActive: true, color: colors.rose),
+            const SizedBox(height: 16),
+            Center(
+              child: GestureDetector(
+                onTap: _stopRecording,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: colors.rose.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colors.rose.withOpacity(0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.stop, color: colors.rose, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Stop',
+                        style: TextStyle(
+                          color: colors.rose,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+
+      case _RecordingState.saved:
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle, color: colors.sage, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  'Recording saved ($_timerLabel)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colors.sage,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            // Waveform animates when previewing
+            AnimatedWaveform(isActive: _isPreviewPlaying, color: colors.rose),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: _togglePreview,
                   child: Container(
+                    constraints: const BoxConstraints(minWidth: 120),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    decoration: _isPreviewPlaying
+                        ? BoxDecoration(
+                            color: colors.rose.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: colors.rose.withOpacity(0.4)),
+                          )
+                        : BoxDecoration(
+                            color: colors.rose,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isPreviewPlaying ? Icons.stop : Icons.play_arrow,
+                          color: _isPreviewPlaying ? colors.rose : Colors.white,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _isPreviewPlaying ? 'Stop' : 'Preview',
+                          style: TextStyle(
+                            color: _isPreviewPlaying ? colors.rose : Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: _reRecord,
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 120),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     decoration: BoxDecoration(
                       color: colors.rose.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: colors.rose.withOpacity(0.4)),
+                      border: Border.all(color: colors.rose.withOpacity(0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -654,7 +800,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                         Icon(Icons.mic, color: colors.rose, size: 18),
                         const SizedBox(width: 6),
                         Text(
-                          'Start recording',
+                          'Re-record',
                           style: TextStyle(
                             color: colors.rose,
                             fontSize: 15,
@@ -665,164 +811,9 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-
-      case _RecordingState.recording:
-        return SizedBox(
-          height: 130,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _PulsingDot(),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Recording... $_timerLabel',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: colors.rose,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              AnimatedWaveform(isActive: true, color: colors.rose),
-              const SizedBox(height: 16),
-              Center(
-                child: GestureDetector(
-                  onTap: _stopRecording,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: colors.rose.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: colors.rose.withOpacity(0.4)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.stop, color: colors.rose, size: 18),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Stop',
-                          style: TextStyle(
-                            color: colors.rose,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-      case _RecordingState.saved:
-        return SizedBox(
-          height: 130,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check_circle, color: colors.sage, size: 18),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Recording saved ($_timerLabel)',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colors.sage,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              // Waveform animates when previewing
-              AnimatedWaveform(isActive: _isPreviewPlaying, color: colors.rose),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _togglePreview,
-                    child: Container(
-                      constraints: const BoxConstraints(minWidth: 120),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: _isPreviewPlaying
-                          ? BoxDecoration(
-                              color: colors.rose.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: colors.rose.withOpacity(0.4)),
-                            )
-                          : BoxDecoration(
-                              color: colors.rose,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _isPreviewPlaying ? Icons.stop : Icons.play_arrow,
-                            color: _isPreviewPlaying ? colors.rose : Colors.white,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _isPreviewPlaying ? 'Stop' : 'Preview',
-                            style: TextStyle(
-                              color: _isPreviewPlaying ? colors.rose : Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: _reRecord,
-                    child: Container(
-                      constraints: const BoxConstraints(minWidth: 120),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: colors.rose.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: colors.rose.withOpacity(0.3)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.mic, color: colors.rose, size: 18),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Re-record',
-                            style: TextStyle(
-                              color: colors.rose,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         );
     }
   }
