@@ -1,5 +1,7 @@
 // lib/screens/welcome_screen.dart
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+import '../widgets/primary_cta_button.dart';
 import 'login_screen.dart';
 import 'create_account_screen.dart';
 
@@ -8,43 +10,52 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(flex: 3),
-              const Text(
-                'Get started',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w900,
-                  height: 1.1,
+              Center(
+                child: Text(
+                  'Get started',
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w900,
+                    height: 1.1,
+                    color: colors.textHigh,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Connection, not correction.',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
+              Center(
+                child: Text(
+                  'Connection, not correction.',
+                  style: TextStyle(fontSize: 16, color: colors.textMed),
+                  textAlign: TextAlign.center,
+                ),
               ),
               const Spacer(flex: 2),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _dot(filled: true),
+                  _dot(colors: colors, filled: true),
                   const SizedBox(width: 8),
-                  _dot(filled: true),
+                  _dot(colors: colors, filled: true),
                   const SizedBox(width: 8),
-                  _dot(filled: true),
+                  _dot(colors: colors, filled: true),
                 ],
               ),
               const Spacer(flex: 2),
-              _AppButton(
+              PrimaryCtaButton(
                 label: 'Create an account',
-                backgroundColor: const Color(0xFFFFF8D9),
-                foregroundColor: Colors.black,
+                color: colors.teal,
+                isOutlined: true,
                 onTap: () async {
                   try {
                     await Navigator.push(
@@ -59,10 +70,10 @@ class WelcomeScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 12),
-              _AppButton(
+              PrimaryCtaButton(
                 label: 'Log in',
-                backgroundColor: Color(0xFFFFDD8F),
-                foregroundColor: Colors.black,
+                color: colors.teal,
+                textColor: colors.textHigh,
                 onTap: () async {
                   try {
                     await Navigator.push(
@@ -84,46 +95,13 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _dot({bool filled = false}) {
+  Widget _dot({required AppColors colors, bool filled = false}) {
     return Container(
       width: 8,
       height: 8,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: filled ? Color(0xFFFFDD8F) : Colors.black26,
-      ),
-    );
-  }
-}
-
-class _AppButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  final Color backgroundColor;
-  final Color foregroundColor;
-
-  const _AppButton({
-    required this.label,
-    required this.onTap,
-    required this.backgroundColor,
-    required this.foregroundColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 200, // Set specific width instead of full width
-      child: FilledButton(
-        onPressed: onTap,
-        style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-        ),
-        child: Text(label, style: const TextStyle(fontSize: 16)),
+        color: filled ? colors.teal : colors.textLow,
       ),
     );
   }

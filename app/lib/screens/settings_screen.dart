@@ -4,6 +4,8 @@ import '../app_state.dart';
 import '../main.dart';
 import '../theme/app_colors.dart';
 import '../widgets/settings_section_card.dart';
+import '../widgets/primary_cta_button.dart';
+import '../widgets/primary_icon_button.dart';
 import 'welcome_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -22,27 +24,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
+    void saveSettings() => AppSettings.saveForCurrentAccount();
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: colors.background,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: GestureDetector(
+        leading: AppBackButton(
+          color: colors.primary,
           onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [colors.shadow],
-            ),
-            child: Icon(
-              Icons.arrow_back_rounded,
-              color: colors.textHigh,
-              size: 18,
-            ),
-          ),
         ),
         title: Text(
           'Settings',
@@ -73,14 +65,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailing: Switch(
                       value: _isDark,
                       onChanged: (v) {
+                        if (v && AppSettings.highContrastMode) {
+                          AppSettings.highContrastMode = false;
+                        }
                         setState(() {
                           themeNotifier.value =
                               v ? ThemeMode.dark : ThemeMode.light;
                           AppSettings.themeMode = themeNotifier.value;
                         });
                         settingsNotifier.value++;
+                        saveSettings();
                       },
                       activeThumbColor: colors.primary,
+                      inactiveTrackColor: colors.background,
+                      inactiveThumbColor: colors.surfaceAlt,
+                      trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.transparent;
+                        }
+                        return colors.surfaceAlt;
+                      }),
                     ),
                   ),
 
@@ -99,6 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onTap: () {
                             setState(() => AppSettings.textScale = 1.0);
                             settingsNotifier.value++;
+                            saveSettings();
                           },
                         ),
                         const SizedBox(width: 6),
@@ -110,6 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onTap: () {
                             setState(() => AppSettings.textScale = 1.2);
                             settingsNotifier.value++;
+                            saveSettings();
                           },
                         ),
                         const SizedBox(width: 6),
@@ -121,6 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onTap: () {
                             setState(() => AppSettings.textScale = 1.4);
                             settingsNotifier.value++;
+                            saveSettings();
                           },
                         ),
                       ],
@@ -134,10 +141,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailing: Switch(
                       value: AppSettings.highContrastMode,
                       onChanged: (v) {
+                        if (v && themeNotifier.value == ThemeMode.dark) {
+                          themeNotifier.value = ThemeMode.light;
+                          AppSettings.themeMode = themeNotifier.value;
+                        }
                         setState(() => AppSettings.highContrastMode = v);
                         settingsNotifier.value++;
+                        saveSettings();
                       },
                       activeThumbColor: colors.primary,
+                      inactiveTrackColor: colors.background,
+                      inactiveThumbColor: colors.surfaceAlt,
+                      trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.transparent;
+                        }
+                        return colors.surfaceAlt;
+                      }),
                     ),
                   ),
 
@@ -150,8 +170,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onChanged: (v) {
                         setState(() => AppSettings.reducedMotion = v);
                         settingsNotifier.value++;
+                        saveSettings();
                       },
                       activeThumbColor: colors.primary,
+                      inactiveTrackColor: colors.background,
+                      inactiveThumbColor: colors.surfaceAlt,
+                      trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.transparent;
+                        }
+                        return colors.surfaceAlt;
+                      }),
                     ),
                   ),
                 ],
@@ -167,10 +196,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.record_voice_over_outlined,
                     label: 'Narration',
                     trailing: Switch(
-                      value: AppSettings.narrationEnabled,
-                      onChanged: (v) =>
-                          setState(() => AppSettings.narrationEnabled = v),
-                      activeThumbColor: colors.primary,
+                        value: AppSettings.narrationEnabled,
+                        onChanged: (v) {
+                          setState(() => AppSettings.narrationEnabled = v);
+                          saveSettings();
+                        },
+                        activeThumbColor: colors.primary,
+                        inactiveTrackColor: colors.background,
+                        inactiveThumbColor: colors.surfaceAlt,
+                        trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                          if (states.contains(WidgetState.selected)) {
+                            return Colors.transparent;
+                          }
+                          return colors.surfaceAlt;
+                        }),
                     ),
                   ),
                   if (AppSettings.narrationEnabled) ...[
@@ -211,8 +250,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             max: 2.0,
                             divisions: 6,
                             activeColor: colors.primary,
-                            onChanged: (v) =>
-                                setState(() => AppSettings.narrationSpeed = v),
+                            inactiveColor: colors.surfaceAlt,
+                            onChanged: (v) {
+                              setState(() => AppSettings.narrationSpeed = v);
+                              saveSettings();
+                            },
                           ),
                         ],
                       ),
@@ -255,8 +297,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             max: 1.0,
                             divisions: 10,
                             activeColor: colors.primary,
-                            onChanged: (v) => setState(
-                                () => AppSettings.narrationVolume = v),
+                            inactiveColor: colors.surfaceAlt,
+                            onChanged: (v) {
+                              setState(() => AppSettings.narrationVolume = v);
+                              saveSettings();
+                            },
                           ),
                         ],
                       ),
@@ -268,9 +313,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Voice Guidance',
                       trailing: Switch(
                         value: AppSettings.voiceGuidanceEnabled,
-                        onChanged: (v) => setState(
-                            () => AppSettings.voiceGuidanceEnabled = v),
+                        onChanged: (v) {
+                          setState(() => AppSettings.voiceGuidanceEnabled = v);
+                          saveSettings();
+                        },
                         activeThumbColor: colors.primary,
+                        inactiveTrackColor: colors.background,
+                        inactiveThumbColor: colors.surfaceAlt,
+                        trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                          if (states.contains(WidgetState.selected)) {
+                            return Colors.transparent;
+                          }
+                          return colors.surfaceAlt;
+                        }),
                       ),
                     ),
 
@@ -349,30 +404,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(16),
-                    child: GestureDetector(
-                      onTap: () => Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const WelcomeScreen()),
-                        (route) => false,
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'Sign out',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ),
+                    child: PrimaryCtaButton(
+                      label: 'Sign out',
+                      color: colors.roseLight,
+                      textColor: colors.rose,
+                      onTap: () async {
+                        try {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const WelcomeScreen(),
+                            ),
+                          );
+                        } catch (_) {
+                          // Optionally handle navigation errors.
+                        }
+                      },
                     ),
                   ),
                 ],
@@ -492,7 +539,7 @@ class _TextSizeButton extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.15) : colors.surfaceAlt,
+          color: isSelected ? color.withValues(alpha: 0.15) : colors.background,
           borderRadius: BorderRadius.circular(8),
           border: isSelected
               ? Border.all(color: color, width: 1.5)

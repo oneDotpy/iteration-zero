@@ -14,8 +14,8 @@ class BreathingDoneScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final primaryColor = isCaregiver ? colors.primary : colors.rose;
-    final bgColor = isCaregiver ? colors.primaryLight : colors.roseLight;
+    final primaryColor = colors.primary;
+    final bgColor = colors.primaryLight;
 
     return Scaffold(
       backgroundColor: bgColor,

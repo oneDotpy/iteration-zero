@@ -4,64 +4,72 @@ import '../app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/breathing_circle.dart';
 import '../widgets/primary_cta_button.dart';
+import '../widgets/primary_icon_button.dart';
 import 'breathing_screen.dart';
 
-class BreatherIntroScreen extends StatelessWidget {
-  static const _lightBlue = Color(0xFFE2EEFE);
-  static const _darkBlue = Color(0xFF9CC1FD);
 
+class BreatherIntroScreen extends StatelessWidget {
   final bool isCaregiver;
-  const BreatherIntroScreen({super.key, required this.isCaregiver});
+  final double? outerSize;
+  final double? innerMinSize;
+  final double? innerMaxSize;
+
+  const BreatherIntroScreen({
+    super.key,
+    required this.isCaregiver,
+    this.outerSize,
+    this.innerMinSize,
+    this.innerMaxSize,
+  });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final bgColor = isCaregiver ? colors.primaryLight : colors.roseLight;
-    final circleColor = isCaregiver ? colors.primary : colors.rose;
-    final buttonColor = isCaregiver ? colors.primary : colors.rose;
+    final bgColor = colors.primaryLight;
+    final circleColor = colors.primary;
+    final iconColor = colors.primaryLight;
+    final buttonColor = colors.primary;
 
     return Scaffold(
       backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: colors.primaryLight,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: AppBackButton(
+          color: colors.primary,
+          onTap: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Take a Breather',
+          style: TextStyle(
+            color: colors.textHigh,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
       body: SafeArea(
+        top: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Back button
-              Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: colors.surface.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [colors.shadow],
-                    ),
-                    child: Icon(
-                      Icons.arrow_back_rounded,
-                      color: colors.textHigh,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-
-              const Spacer(flex: 2),
+              const Spacer(flex: 1),
 
               // Breathing circle visual — shows gentle pulse in inhale phase
               Center(
                 child: BreathingCircle(
                   phase: BreathPhase.inhale,
                   primaryColor: circleColor,
+                  iconColor: iconColor,
                   reducedMotion: AppSettings.reducedMotion,
+                  showCountdown: false,
                 ),
               ),
 
-              const Spacer(flex: 1),
+              const SizedBox(height: 24),
 
               Text(
                 "Let's take\nsome deep\nbreaths.",

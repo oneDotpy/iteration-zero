@@ -18,12 +18,45 @@ class _UserAccount {
 class AppSettings {
   static ThemeMode themeMode = ThemeMode.light;
   static bool narrationEnabled = true;
-  static double textScale = 1.0;
+  static double textScale = 1.2;
   static bool highContrastMode = false;
   static bool reducedMotion = false;
   static bool voiceGuidanceEnabled = true;
   static double narrationSpeed = 1.0;
   static double narrationVolume = 1.0;
+
+  // Store settings per account (by email)
+  static final Map<String, Map<String, dynamic>> _accountSettings = {};
+
+  static void saveForCurrentAccount() {
+    final email = AppState.loggedInEmail;
+    if (email.isEmpty) return;
+    _accountSettings[email] = {
+      'themeMode': themeMode.index,
+      'narrationEnabled': narrationEnabled,
+      'textScale': textScale,
+      'highContrastMode': highContrastMode,
+      'reducedMotion': reducedMotion,
+      'voiceGuidanceEnabled': voiceGuidanceEnabled,
+      'narrationSpeed': narrationSpeed,
+      'narrationVolume': narrationVolume,
+    };
+  }
+
+  static void loadForCurrentAccount() {
+    final email = AppState.loggedInEmail;
+    if (email.isEmpty) return;
+    final s = _accountSettings[email];
+    if (s == null) return;
+    themeMode = ThemeMode.values[s['themeMode'] ?? 0];
+    narrationEnabled = s['narrationEnabled'] ?? true;
+    textScale = (s['textScale'] ?? 1.0).toDouble();
+    highContrastMode = s['highContrastMode'] ?? false;
+    reducedMotion = s['reducedMotion'] ?? false;
+    voiceGuidanceEnabled = s['voiceGuidanceEnabled'] ?? true;
+    narrationSpeed = (s['narrationSpeed'] ?? 1.0).toDouble();
+    narrationVolume = (s['narrationVolume'] ?? 1.0).toDouble();
+  }
 }
 
 class PatientProfile {
@@ -156,6 +189,8 @@ class AppState {
         loggedInName = acc.name;
         loggedInEmail = acc.email;
         loggedInRole = acc.role;
+        // Load settings for this account
+        AppSettings.loadForCurrentAccount();
         return acc.role;
       }
     }
@@ -178,6 +213,8 @@ class AppState {
     loggedInName = displayName;
     loggedInEmail = e;
     loggedInRole = role;
+    // Save default settings for new account
+    AppSettings.saveForCurrentAccount();
     return role;
   }
 

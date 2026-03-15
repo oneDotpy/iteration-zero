@@ -9,6 +9,7 @@ class PrimaryCtaButton extends StatelessWidget {
   final Color? textColor;
   final IconData? icon;
   final bool isOutlined;
+  final double? height;
 
   const PrimaryCtaButton({
     super.key,
@@ -18,6 +19,7 @@ class PrimaryCtaButton extends StatelessWidget {
     this.textColor,
     this.icon,
     this.isOutlined = false,
+    this.height,
   });
 
   @override
@@ -26,46 +28,65 @@ class PrimaryCtaButton extends StatelessWidget {
     final resolvedColor = color ?? colors.primary;
     final resolvedTextColor = textColor ?? (isOutlined ? resolvedColor : Colors.white);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: 60,
-        decoration: BoxDecoration(
-          color: isOutlined ? Colors.transparent : resolvedColor,
-          borderRadius: BorderRadius.circular(16),
-          border: isOutlined
-              ? Border.all(color: resolvedColor, width: 1.5)
-              : null,
-          boxShadow: isOutlined
-              ? null
-              : [
-                  BoxShadow(
-                    color: resolvedColor.withValues(alpha: 0.28),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+    final buttonChild = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          Icon(icon, color: resolvedTextColor, size: 20),
+          const SizedBox(width: 8),
+        ],
+        Text(
+          label,
+          style: TextStyle(
+            color: resolvedTextColor,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, color: resolvedTextColor, size: 20),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                color: resolvedTextColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
+      ],
     );
+
+    final ButtonStyle style = isOutlined
+        ? OutlinedButton.styleFrom(
+            foregroundColor: resolvedTextColor,
+            backgroundColor: Colors.transparent,
+            side: BorderSide(color: resolvedColor, width: 1.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            minimumSize: Size(double.infinity, height ?? 65),
+          )
+        : FilledButton.styleFrom(
+            backgroundColor: resolvedColor,
+            foregroundColor: resolvedTextColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            minimumSize: Size(double.infinity, height ?? 65),
+            elevation: 0,
+          );
+
+    final button = isOutlined
+        ? OutlinedButton(
+            onPressed: onTap,
+            style: style,
+            child: buttonChild,
+          )
+        : FilledButton(
+            onPressed: onTap,
+            style: style,
+            child: buttonChild,
+          );
+
+    // Only apply shadow for filled (not outlined) buttons
+    return isOutlined
+        ? button
+        : Container(
+            decoration: BoxDecoration(
+              boxShadow: [colors.shadow],
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: button,
+          );
   }
 }

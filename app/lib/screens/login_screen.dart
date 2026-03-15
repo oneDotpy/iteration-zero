@@ -4,9 +4,11 @@ import '../app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/soft_text_field.dart';
 import '../widgets/primary_cta_button.dart';
+import '../widgets/primary_icon_button.dart';
 import 'caregiver_home_screen.dart';
 import 'patient_home_screen.dart';
 import 'create_account_screen.dart';
+import '../main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,8 +18,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _lightYellow = Color(0xFFFFF8D9);
-  static const _darkYellow = Color(0xFFFFDD8F);
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -53,6 +53,10 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
+      // Update theme and settings to match the user's saved preference
+      themeNotifier.value = AppSettings.themeMode;
+      settingsNotifier.value++;
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -70,25 +74,14 @@ class _LoginScreenState extends State<LoginScreen> {
     final colors = context.appColors;
 
     return Scaffold(
-      backgroundColor: _lightYellow,
+      backgroundColor: colors.tealLight,
       appBar: AppBar(
-        backgroundColor: _lightYellow,
+        backgroundColor: colors.tealLight,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: GestureDetector(
+        leading: AppBackButton(
+          color: colors.teal,
           onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: _darkYellow,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.arrow_back_rounded,
-              color: Colors.black,
-              size: 18,
-            ),
-          ),
         ),
       ),
       body: SafeArea(
@@ -102,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Title
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.center,
                 child: Text(
                   'Welcome back',
                   style: TextStyle(
@@ -115,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 6),
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.center,
                 child: Text(
                   'Sign in to continue.',
                   style: TextStyle(
@@ -135,6 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 label: 'Email',
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                fillColor: colors.background,
                 onChanged: (_) {
                   if (_errorMessage.isNotEmpty) setState(() => _errorMessage = '');
                 },
@@ -167,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       hintText: '••••••••',
                       hintStyle: TextStyle(color: colors.textLow),
                       filled: true,
-                      fillColor: colors.surfaceAlt,
+                      fillColor: colors.background,
                       prefixIcon: Icon(
                         Icons.lock_outline,
                         color: colors.textMed,
@@ -197,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide:
-                            BorderSide(color: colors.primary, width: 1.5),
+                            BorderSide(color: colors.teal, width: 1.5),
                       ),
                     ),
                   ),
@@ -212,24 +206,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: _darkYellow,
+                        color: colors.teal,
                         borderRadius: BorderRadius.circular(16),
+                        boxShadow: [colors.shadow],
                       ),
                       alignment: Alignment.center,
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
-                          color: Colors.black,
+                          color: colors.textHigh,
                           strokeWidth: 2.5,
                         ),
                       ),
                     )
-                  : PrimaryCtaButton(
-                      label: 'Sign In',
+                  :  Container(
+                      width: double.infinity,
+                      height: 60,
+                      child: PrimaryCtaButton(
+                      label: 'Log in',
                       onTap: _login,
-                      color: _darkYellow,
+                      color: colors.teal,
+                      textColor: colors.textHigh,
+                      height: 60,
                     ),
+                  ),
 
               const SizedBox(height: 16),
 
@@ -239,23 +240,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.redAccent.withValues(alpha: 0.08),
+                    color: colors.rose.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.redAccent.withValues(alpha: 0.30),
+                      color: colors.rose.withValues(alpha: 0.30),
                     ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded,
-                          color: Colors.redAccent, size: 18),
+                      Icon(
+                        Icons.error_outline_rounded,
+                        color: colors.rose,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _errorMessage,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
-                            color: Colors.redAccent,
+                            color: colors.rose,
                           ),
                         ),
                       ),
@@ -269,9 +273,9 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "Don't have an account?",
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
+                    style: TextStyle(fontSize: 14, color: colors.textMed),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pushReplacement(
@@ -280,12 +284,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           builder: (_) => const CreateAccountScreen()),
                     ),
                     style: TextButton.styleFrom(
-                      foregroundColor: Colors.black,
+                      foregroundColor: colors.textHigh,
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Create one',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 14, 
+                        fontWeight: FontWeight.w600, 
+                        color: colors.teal),
                     ),
                   ),
                 ],

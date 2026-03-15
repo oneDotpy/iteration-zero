@@ -1,7 +1,8 @@
 // lib/screens/guidance_topic_screen.dart
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../widgets/soft_card.dart';
+import '../widgets/dashboard_action_card.dart';
+import '../widgets/primary_icon_button.dart';
 import 'guidance_result_screen.dart';
 
 class GuidanceTopicScreen extends StatelessWidget {
@@ -75,26 +76,14 @@ class GuidanceTopicScreen extends StatelessWidget {
     final colors = context.appColors;
 
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: colors.sageLight,
       appBar: AppBar(
-        backgroundColor: colors.background,
+        backgroundColor: colors.sageLight,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: GestureDetector(
+        leading: AppBackButton(
+          color: colors.sage,
           onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [colors.shadow],
-            ),
-            child: Icon(
-              Icons.arrow_back_rounded,
-              color: colors.textHigh,
-              size: 18,
-            ),
-          ),
         ),
         title: Text(
           'Get Guidance',
@@ -104,45 +93,24 @@ class GuidanceTopicScreen extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
+        actions: [],
       ),
       body: SafeArea(
         top: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header card
-              SoftCard(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: colors.primaryLight,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.lightbulb_outline,
-                        color: colors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Text(
-                        'What would you like guidance on?',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: colors.textHigh,
-                          height: 1.3,
-                        ),
-                      ),
-                    ),
-                  ],
+              // Header prompt
+              Text(
+                'What would you like guidance on?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textHigh,
+                  height: 1.25,
                 ),
               ),
 
@@ -155,58 +123,19 @@ class GuidanceTopicScreen extends StatelessWidget {
                   separatorBuilder: (_, sep) => const SizedBox(height: 10),
                   itemBuilder: (_, i) {
                     final topic = _topics[i];
-                    return GestureDetector(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => GuidanceResultScreen(topic: topic),
+                      return DashboardActionCard(
+                        title: topic.label,
+                        icon: topic.icon,
+                        color: colors.sage,
+                        backgroundColor: colors.background,
+                        isLarge: false,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => GuidanceResultScreen(topic: topic),
+                          ),
                         ),
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [colors.shadow],
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 16,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: colors.primaryLight,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                topic.icon,
-                                color: colors.primary,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Text(
-                                topic.label,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: colors.textHigh,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.chevron_right_rounded,
-                              color: colors.textLow,
-                              size: 22,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                      );
                   },
                 ),
               ),
