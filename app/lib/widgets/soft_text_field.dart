@@ -14,7 +14,7 @@ class SoftTextField extends StatelessWidget {
   final Color? fillColor;
 
   const SoftTextField({
-    Key? key,
+    super.key,
     this.controller,
     required this.hint,
     this.label,
@@ -24,7 +24,7 @@ class SoftTextField extends StatelessWidget {
     this.prefixIcon,
     this.onChanged,
     this.fillColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

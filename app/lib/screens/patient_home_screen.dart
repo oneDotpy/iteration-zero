@@ -183,7 +183,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Patient View',
+                          'Care Recipient View',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,

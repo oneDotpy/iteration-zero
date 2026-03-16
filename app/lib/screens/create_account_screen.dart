@@ -236,7 +236,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Patient',
+                            'Care Recipient',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
