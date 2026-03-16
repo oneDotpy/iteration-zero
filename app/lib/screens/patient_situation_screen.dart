@@ -110,7 +110,7 @@ class PatientSituationScreen extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(s.icon, color: colors.textHigh, size: 28),
+                          Icon(s.icon, color: colors.textHigh, size: 24),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Text(

@@ -232,9 +232,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
 
                         return DashboardActionCard(
                           title: p.name,
-                          subtitle: (p.notes.toString().trim().isNotEmpty)
-                              ? p.notes.toString().trim()
-                              : 'View & edit profile',
+                          subtitle: 'View & edit profile',
                           backgroundColor: colors.background,
                           onTap: () async {
                             await Navigator.push(

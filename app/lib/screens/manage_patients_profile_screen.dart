@@ -94,6 +94,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 		final patient = widget.patient;
 		final colors = context.appColors;
 
+
 		return Scaffold(
 			body: SafeArea(
 				top: true,
@@ -171,7 +172,8 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 							),
 						),
 						Expanded(
-							child: Padding(
+              
+							child: SingleChildScrollView(
 								padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
 								child: Column(
 									crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -185,21 +187,19 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 												height: 1.4,
 											),
 										),
-										const Spacer(),
-										Center(
-											child: SizedBox(
-												child: PrimaryCtaButton(
-													label: 'Done',
-													onTap: () => Navigator.pop(context),
-													color: colors.teal,
-												),
-											),
-										),
-										const SizedBox(height: 16),
 									],
 								),
 							),
+							
 						),
+						Container(
+							padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+							child: PrimaryCtaButton(
+								label: 'Done',
+								onTap: () => Navigator.pop(context),
+								color: colors.teal,
+							),
+						)
 					],
 				),
 			),
