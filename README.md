@@ -49,15 +49,14 @@ iteration-zero/
         ├── screens/
         │   ├── welcome_screen.dart
         │   ├── login_screen.dart
-        │   ├── signup_screen.dart
+        │   ├── create_account_screen.dart
         │   ├── caregiver_home_screen.dart
         │   ├── patient_home_screen.dart
         │   ├── guidance_topic_screen.dart
         │   ├── guidance_result_screen.dart
         │   ├── guidance_done_screen.dart
         │   ├── send_reassurance_screen.dart
-        │   ├── caregiver_setup_screen.dart
-        │   ├── caregiver_setup_voice_screen.dart
+        |   ├── send_reassurance_done_screen.dart
         │   ├── manage_patients_screen.dart
         │   ├── breather_intro_screen.dart
         │   ├── breathing_screen.dart
@@ -137,4 +136,4 @@ Output is in `app/build/web/` — open `index.html` in any browser.
 - This is a **prototype** — there is no real backend or database. All state lives in memory and resets when the app is closed.
 - Voice recording and playback are **simulated** — no audio is actually captured or stored.
 - The breathing exercise is limited to **3 cycles** by design.
-- **Accessibility settings** apply immediately app-wide via `settingsNotifier` (a `ValueNotifier<int>`) that triggers a full widget tree rebuild. Text scaling uses Flutter's `MediaQuery.textScaler`; high contrast swaps the entire `AppColors` palette; reduced motion disables animated waveforms and the breathing circle animation.
+- **Accessibility settings** apply immediately app-wide via `settingsNotifier` (a `ValueNotifier<int>`) that triggers a full widget tree rebuild. Text scaling uses Flutter's `MediaQuery.textScaler`; high contrast swaps the entire `AppColors` palette; reduced motion disables animated waveforms and page transitions and replaces the breathing circle animation with a countdown.
