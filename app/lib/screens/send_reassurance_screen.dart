@@ -139,17 +139,6 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     });
   }
 
-  void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
-
   @override
   void dispose() {
     _recordingTimer?.cancel();
@@ -681,7 +670,7 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                 Text(
                   'Recording... $_timerLabel',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     color: colors.rose,
                     fontWeight: FontWeight.w500,
                   ),
