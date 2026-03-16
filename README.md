@@ -1,8 +1,8 @@
-# Caregiver x Patient — by Iteration Zero
+# MemoryCare: Caregiver x Care Recipient — by Iteration Zero
 
 > *"Connection, not correction."*
 
-A Flutter prototype for a caregiver support app, built for CSC318. The app has two sides: one for **caregivers** managing their loved ones, and one for **patients** seeking comfort and reassurance.
+A Flutter prototype for a caregiver support app, built for CSC318. The app has two sides: one for **caregivers** managing their loved ones, and one for **care recipient** seeking comfort and reassurance.
 
 ---
 
@@ -10,18 +10,18 @@ A Flutter prototype for a caregiver support app, built for CSC318. The app has t
 
 ### Caregiver side
 - **Get some guidance** — browse topics (sundowning, wandering, repetitive questions, etc.) and read evidence-based guidance. A done screen ("Happy to help.") lets you get more guidance or return home.
-- **Send reassurance** — compose a headline, subtext, and simulated voice recording for a specific patient and situation. Supports multiple patients and multiple situation types per message. After saving, the form clears and shows a "Reassurance sent!" confirmation with an option to send another.
+- **Send reassurance** — compose a headline, subtext, and simulated voice recording for a specific care recipient and situation. Supports multiple care recipients and multiple situation types per message. After saving, the form clears and shows a "Reassurance sent!" confirmation with an option to send another.
 - **Take a breather** — a 3-cycle guided breathing exercise with an animated inner circle (inhale → hold → exhale). Progress dots track cycles; a done screen offers to continue or finish.
-- **Manage patients** — add, edit, and remove patients from your care list. Each patient gets their own reassurance message store.
+- **Manage care recipients** — add, edit, and remove care recipients from your care list. Each care recipient gets their own reassurance message store.
 
-### Patient side
+### Care Recipient side
 - **I feel unsure** — choose what's happening right now (time, place, person, or general confusion) and receive the reassurance message your caregiver prepared.
 - **Hear a familiar voice** — play back the simulated voice recording your caregiver recorded.
 - **Take a breather** — same guided breathing exercise as the caregiver side.
 
 ### Shared features
 - Simulated voice input bar on home screens and the "I feel unsure" screen — tap to enter listening mode, see a live timer and animated waveform, tap Done or wait 10 s. Shows "Got it!" confirmation before returning to idle.
-- Sign up (caregiver or patient role) or log in — accounts persist for the app session.
+- Sign up (caregiver or care recipient role) or log in — accounts persist for the app session.
 - **Settings** — dark mode, high contrast, text size (S/M/L), reduced motion. All settings take effect immediately app-wide.
 
 ---
