@@ -53,10 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // Update theme and settings to match the user's saved preference
-      themeNotifier.value = AppSettings.themeMode;
-      settingsNotifier.value++;
-
+      // Navigate first, then update theme/settings to avoid visual change on login screen
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -66,6 +63,13 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         (route) => false,
       );
+
+      // Use a post-frame callback to update ALL settings after navigation
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        AppSettings.loadForCurrentAccount();
+        themeNotifier.value = AppSettings.themeMode;
+        settingsNotifier.value++;
+      });
     });
   }
 

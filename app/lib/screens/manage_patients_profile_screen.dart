@@ -29,7 +29,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 			context: context,
 			builder: (ctx) => AlertDialog(
 				backgroundColor: colors.background,
-				title: const Text('Edit patient'),
+				title: const Text('Edit care recipient'),
 				content: Column(
 					mainAxisSize: MainAxisSize.min,
 					children: [

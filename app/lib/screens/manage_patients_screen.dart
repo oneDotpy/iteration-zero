@@ -23,7 +23,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.background,
-        title: const Text('Add patient'),
+        title: const Text('Add care recipient'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -89,7 +89,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.background,
-        title: const Text('Edit patient'),
+        title: const Text('Edit care recipient'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -203,7 +203,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
           onTap: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
-          'Manage Patients',
+          'My Care Recipients',
           style: TextStyle(
             color: colors.textHigh,
             fontSize: 20,
@@ -220,7 +220,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
             children: [
               const SizedBox(height: 12),
               patients.isEmpty
-                  ? const Center(child: Text('No patients yet.'))
+                  ? const Center(child: Text('No care recipients yet.'))
                   : ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -294,7 +294,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                       onPressed: _showAddDialog,
                       icon: const Icon(Icons.person_add_outlined),
                       label: const Text(
-                        'Add patient',
+                        'Add care recipient',
                         style: TextStyle(fontSize: 16),
                       ),
                     ),

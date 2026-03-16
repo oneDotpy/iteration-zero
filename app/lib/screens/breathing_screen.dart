@@ -132,21 +132,20 @@ class _BreathingScreenState extends State<BreathingScreen>
 
     return Scaffold(
       backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: bgColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: AppBackButton(
+          color: colors.primary,
+          onTap: () => Navigator.pop(context),
+        ),
+        title: null,
+        centerTitle: false,
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            // Back button row
-            Padding(
-              padding: const EdgeInsets.only(left: 16, top: 16),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: AppBackButton(
-                  color: colors.primary,
-                  onTap: () => Navigator.pop(context),
-                ),
-              ),
-            ),
-
             const Spacer(flex: 1),
 
             // Phase label

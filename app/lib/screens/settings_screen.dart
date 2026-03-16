@@ -365,15 +365,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // ── C. View Preferences ───────────────────────────────────────
               SettingsSectionCard(
                 title:
-                    '${widget.isCaregiver ? "Caregiver" : "Patient"} View Preferences',
+                    '${widget.isCaregiver ? "Caregiver" : "Care Recipient"} View Preferences',
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 14),
                     child: Text(
                       widget.isCaregiver
-                          ? 'You are using the Caregiver view. This gives you access to guidance tools, reassurance message management, breathing exercises, and patient profiles.'
-                          : 'You are using the Patient view. This view is designed for the person receiving care — simple, warm, and focused on comfort.',
+                          ? 'You are using the Caregiver view. This gives the person providing care access to guidance tools, reassurance message management, breathing exercises, and patient profiles.'
+                          : 'You are using the Care Recipient view. This view is designed for the person receiving care — simple, warm, and focused on comfort.',
                       style: TextStyle(
                         fontSize: 14,
                         color: colors.textMed,

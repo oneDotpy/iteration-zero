@@ -74,11 +74,10 @@ class BreathingDoneScreen extends StatelessWidget {
               // Keep going button
               PrimaryCtaButton(
                 label: 'Keep going',
-                onTap: () => Navigator.pushReplacement(
+                onTap: () => Navigator.pop(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        BreatherIntroScreen(isCaregiver: isCaregiver),
+                    builder: (_) => BreatherIntroScreen(isCaregiver: isCaregiver),
                   ),
                 ),
                 color: primaryColor,

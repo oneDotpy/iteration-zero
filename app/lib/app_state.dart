@@ -1,4 +1,5 @@
 // lib/app_state.dart
+import 'package:connection_app/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -16,11 +17,12 @@ class _UserAccount {
 }
 
 class AppSettings {
-  static ThemeMode themeMode = ThemeMode.light;
+  // Defaults: dark mode off, high contrast off, reduced motion off
+  static ThemeMode themeMode = ThemeMode.light; // Light mode (dark mode off)
   static bool narrationEnabled = true;
   static double textScale = 1.2;
-  static bool highContrastMode = false;
-  static bool reducedMotion = false;
+  static bool highContrastMode = false; // High contrast off
+  static bool reducedMotion = false; // Reduced motion off
   static bool voiceGuidanceEnabled = true;
   static double narrationSpeed = 1.0;
   static double narrationVolume = 1.0;
@@ -189,8 +191,19 @@ class AppState {
         loggedInName = acc.name;
         loggedInEmail = acc.email;
         loggedInRole = acc.role;
+        // If this account has no saved settings, save defaults now
+        if (!AppSettings._accountSettings.containsKey(acc.email)) {
+          AppSettings.themeMode = ThemeMode.light;
+          AppSettings.highContrastMode = false;
+          AppSettings.reducedMotion = false;
+          AppSettings.saveForCurrentAccount();
+        }
         // Load settings for this account
         AppSettings.loadForCurrentAccount();
+        // Ensure themeNotifier is updated to match loaded settings
+        try {
+          themeNotifier.value = AppSettings.themeMode;
+        } catch (_) {}
         return acc.role;
       }
     }

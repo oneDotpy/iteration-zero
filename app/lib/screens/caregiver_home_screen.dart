@@ -216,7 +216,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
               const SizedBox(height: 10),
 
               DashboardActionCard(
-                title: 'Manage patients',
+                title: 'My care recipients',
                 subtitle: 'View & edit profiles',
                 icon: Icons.people_outline,
                 color: colors.teal,

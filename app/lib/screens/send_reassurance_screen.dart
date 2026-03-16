@@ -91,7 +91,9 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
 
   void _save() {
     if (_selectedPatientIds.isEmpty) {
-      _snack('Please select at least one patient.');
+      setState(() {
+        _validationMessage = 'Please select at least one care recipient.';
+      });
       return;
     }
     final missingSituation = _selectedSituations.isEmpty;
