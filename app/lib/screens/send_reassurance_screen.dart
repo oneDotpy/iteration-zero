@@ -1,6 +1,12 @@
 // lib/screens/send_reassurance_screen.dart
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 import '../app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/soft_card.dart';
@@ -8,6 +14,7 @@ import '../widgets/animated_waveform.dart';
 import '../widgets/primary_icon_button.dart';
 import '../widgets/primary_cta_button.dart';
 import 'send_reassurance_done_screen.dart';
+import '../services/widget_service.dart';
 
 enum _RecordingState { idle, recording, saved }
 
@@ -26,13 +33,22 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
   // Patient selector
   final Set<String> _selectedPatientIds = {AppState.defaultPatientId};
 
-  // Voice recording (simulated)
+  // Voice recording
   bool _addVoice = false;
   _RecordingState _recordingState = _RecordingState.idle;
   int _recordingSeconds = 0;
   Timer? _recordingTimer;
   bool _isPreviewPlaying = false;
-  Timer? _previewTimer;
+  String? _recordingPath;
+
+  final AudioRecorder _recorder = AudioRecorder();
+  final AudioPlayer _player = AudioPlayer();
+
+  // Media attachment
+  String? _mediaPath;
+  bool _isVideo = false;
+  VideoPlayerController? _videoController;
+  final ImagePicker _imagePicker = ImagePicker();
 
   // Situation selector
   final Set<int> _selectedSituations = {};
@@ -47,28 +63,47 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     'In any situation',
   ];
 
-  void _startRecording() {
+  Future<void> _startRecording() async {
+    final hasPermission = await _recorder.hasPermission();
+    if (!hasPermission) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Microphone permission denied.')),
+        );
+      }
+      return;
+    }
+    final dir = await getApplicationDocumentsDirectory();
+    final path = '${dir.path}/reassurance_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    await _recorder.start(
+      const RecordConfig(encoder: AudioEncoder.aacLc, bitRate: 128000),
+      path: path,
+    );
+    _recordingPath = path;
     setState(() {
       _recordingState = _RecordingState.recording;
       _recordingSeconds = 0;
     });
     _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      if (_recordingSeconds >= 10) {
-        _stopRecording();
-        return;
-      }
       setState(() => _recordingSeconds++);
     });
   }
 
-  void _stopRecording() {
+  Future<void> _stopRecording() async {
     _recordingTimer?.cancel();
+    await _recorder.stop();
     setState(() => _recordingState = _RecordingState.saved);
   }
 
-  void _reRecord() {
-    _previewTimer?.cancel();
+  Future<void> _reRecord() async {
+    await _player.stop();
+    if (await _recorder.isRecording()) await _recorder.stop();
+    if (_recordingPath != null) {
+      final f = File(_recordingPath!);
+      if (await f.exists()) await f.delete();
+      _recordingPath = null;
+    }
     setState(() {
       _recordingState = _RecordingState.idle;
       _recordingSeconds = 0;
@@ -76,15 +111,16 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     });
   }
 
-  void _togglePreview() {
+  Future<void> _togglePreview() async {
     if (_isPreviewPlaying) {
-      _previewTimer?.cancel();
+      await _player.stop();
       setState(() => _isPreviewPlaying = false);
       return;
     }
+    if (_recordingPath == null) return;
     setState(() => _isPreviewPlaying = true);
-    final duration = Duration(seconds: _recordingSeconds.clamp(1, 10));
-    _previewTimer = Timer(duration, () {
+    await _player.play(DeviceFileSource(_recordingPath!));
+    _player.onPlayerComplete.first.then((_) {
       if (mounted) setState(() => _isPreviewPlaying = false);
     });
   }
@@ -118,9 +154,12 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
       subtext: _subtextController.text,
       hasRecording: _recordingState == _RecordingState.saved,
       recordingDurationSeconds: _recordingSeconds,
+      recordingPath: _recordingPath,
+      mediaPath: _mediaPath,
+      isVideo: _isVideo,
     );
+    WidgetService.updatePatientWidget();
     _recordingTimer?.cancel();
-    _previewTimer?.cancel();
     _headlineController.clear();
     _subtextController.clear();
     final isCaregiver = AppState.loggedInRole == 'caregiver';
@@ -139,10 +178,44 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     });
   }
 
+  Future<void> _pickMedia(bool video) async {
+    final file = video
+        ? await _imagePicker.pickVideo(source: ImageSource.gallery)
+        : await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (file == null || !mounted) return;
+    _videoController?.dispose();
+    _videoController = null;
+    if (video) {
+      final ctrl = VideoPlayerController.file(File(file.path));
+      await ctrl.initialize();
+      setState(() {
+        _mediaPath = file.path;
+        _isVideo = true;
+        _videoController = ctrl;
+      });
+    } else {
+      setState(() {
+        _mediaPath = file.path;
+        _isVideo = false;
+      });
+    }
+  }
+
+  void _removeMedia() {
+    _videoController?.dispose();
+    setState(() {
+      _mediaPath = null;
+      _isVideo = false;
+      _videoController = null;
+    });
+  }
+
   @override
   void dispose() {
     _recordingTimer?.cancel();
-    _previewTimer?.cancel();
+    _recorder.dispose();
+    _player.dispose();
+    _videoController?.dispose();
     _headlineController.dispose();
     _subtextController.dispose();
     super.dispose();
@@ -296,16 +369,21 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      onTap: () => setState(() {
-                        _addVoice = !_addVoice;
+                      onTap: () {
+                        setState(() => _addVoice = !_addVoice);
                         if (!_addVoice) {
                           _recordingTimer?.cancel();
-                          _previewTimer?.cancel();
-                          _recordingState = _RecordingState.idle;
-                          _recordingSeconds = 0;
-                          _isPreviewPlaying = false;
+                          _player.stop();
+                          if (_recordingState == _RecordingState.recording) {
+                            _recorder.stop();
+                          }
+                          setState(() {
+                            _recordingState = _RecordingState.idle;
+                            _recordingSeconds = 0;
+                            _isPreviewPlaying = false;
+                          });
                         }
-                      }),
+                      },
                       child: Row(
                         children: [
                           _RadioDot(selected: _addVoice, colors: colors),
@@ -324,6 +402,89 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
                     if (_addVoice) ...[
                       const SizedBox(height: 20),
                       _buildRecordingSection(colors),
+                    ],
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Media attachment section
+              SoftCard(
+                color: colors.background,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add a photo or video',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: colors.textHigh),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Optional — shown to your care recipient alongside the message.',
+                      style: TextStyle(fontSize: 13, color: colors.textMed),
+                    ),
+                    const SizedBox(height: 14),
+                    if (_mediaPath == null) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _MediaPickButton(
+                              icon: Icons.image_outlined,
+                              label: 'Photo',
+                              color: colors.teal,
+                              onTap: () => _pickMedia(false),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _MediaPickButton(
+                              icon: Icons.videocam_outlined,
+                              label: 'Video',
+                              color: colors.sage,
+                              onTap: () => _pickMedia(true),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: _isVideo && _videoController != null
+                                ? AspectRatio(
+                                    aspectRatio: _videoController!.value.aspectRatio,
+                                    child: VideoPlayer(_videoController!),
+                                  )
+                                : Image.file(
+                                    File(_mediaPath!),
+                                    width: double.infinity,
+                                    height: 180,
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: GestureDetector(
+                              onTap: _removeMedia,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(6),
+                                child: const Icon(Icons.close, color: Colors.white, size: 16),
+                              ),
+                            ),
+                          ),
+                          if (_isVideo)
+                            const Center(
+                              child: Icon(Icons.play_circle_fill, color: Colors.white70, size: 48),
+                            ),
+                        ],
+                      ),
                     ],
                   ],
                 ),
@@ -878,4 +1039,34 @@ class _PulsingDotState extends State<_PulsingDot>
           ),
         ),
       );
+}
+
+class _MediaPickButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _MediaPickButton({required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13)),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -4,6 +4,10 @@
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>[un]scripted needs microphone access to record voice messages for reassurance playback.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Connection App needs photo library access to attach photos and videos to reassurance messages and care recipient profiles.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Connection App needs camera access to take photos for care recipient profiles and reassurance messages.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

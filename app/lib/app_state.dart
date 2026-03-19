@@ -61,12 +61,84 @@ class AppSettings {
   }
 }
 
+// ── Usage tracking ────────────────────────────────────────────────────────────
+
+const String kEventAppOpen = 'app_open';
+const String kEventFeelUnsure = 'feel_unsure';
+const String kEventHearVoice = 'hear_voice';
+const String kEventBreather = 'breather';
+
+class UsageEvent {
+  final String action;
+  final DateTime timestamp;
+  UsageEvent({required this.action, required this.timestamp});
+}
+
+class PatientUsageStats {
+  final List<UsageEvent> events = [];
+  Map<String, int> alertThresholds = {
+    kEventFeelUnsure: 5,
+    kEventHearVoice: 5,
+    kEventBreather: 5,
+  };
+  // Which thresholds have already triggered a notification today (reset daily)
+  final Set<String> _notifiedToday = {};
+
+  void log(String action) =>
+      events.add(UsageEvent(action: action, timestamp: DateTime.now()));
+
+  int countToday(String action) {
+    final today = _startOfToday();
+    return events
+        .where((e) => e.action == action && !e.timestamp.isBefore(today))
+        .length;
+  }
+
+  int countTotal(String action) =>
+      events.where((e) => e.action == action).length;
+
+  /// Returns the action key if it just crossed its threshold, null otherwise.
+  String? checkThreshold(String action) {
+    final threshold = alertThresholds[action];
+    if (threshold == null) return null;
+    final todayKey = '${action}_${_startOfToday().toIso8601String()}';
+    if (_notifiedToday.contains(todayKey)) return null;
+    if (countToday(action) >= threshold) {
+      _notifiedToday.add(todayKey);
+      return action;
+    }
+    return null;
+  }
+
+  static DateTime _startOfToday() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  // Last 7 days counts per action
+  Map<String, List<int>> weeklyBreakdown() {
+    final result = <String, List<int>>{};
+    for (final action in [kEventFeelUnsure, kEventHearVoice, kEventBreather, kEventAppOpen]) {
+      final counts = List<int>.filled(7, 0);
+      for (final e in events) {
+        final daysAgo = DateTime.now().difference(e.timestamp).inDays;
+        if (e.action == action && daysAgo < 7) {
+          counts[6 - daysAgo]++;
+        }
+      }
+      result[action] = counts;
+    }
+    return result;
+  }
+}
+
 class PatientProfile {
   final String id;
   String name;
   String notes;
+  String? imagePath;
 
-  PatientProfile({required this.id, required this.name, this.notes = ''});
+  PatientProfile({required this.id, required this.name, this.notes = '', this.imagePath});
 }
 
 class ReassuranceData {
@@ -75,6 +147,8 @@ class ReassuranceData {
   bool hasRecording;
   int recordingDurationSeconds;
   String? recordingPath;
+  String? mediaPath;
+  bool isVideo;
 
   ReassuranceData({
     required this.headline,
@@ -82,6 +156,8 @@ class ReassuranceData {
     this.hasRecording = false,
     this.recordingDurationSeconds = 0,
     this.recordingPath,
+    this.mediaPath,
+    this.isVideo = false,
   });
 }
 
@@ -129,6 +205,18 @@ class AppState {
     PatientProfile(id: defaultPatientId, name: _demoPatientName),
   ];
 
+  // Per-patient usage stats
+  static Map<String, PatientUsageStats> patientUsageStats = {
+    defaultPatientId: PatientUsageStats(),
+  };
+
+  static PatientUsageStats getUsageFor(String patientId) =>
+      patientUsageStats.putIfAbsent(patientId, PatientUsageStats.new);
+
+  static void logPatientEvent(String action) {
+    getUsageFor(defaultPatientId).log(action);
+  }
+
   // Per-patient reassurance messages: patientId -> situationIndex -> message list
   static Map<String, Map<int, List<ReassuranceData>>> patientMessages = {
     defaultPatientId: _defaultMessages(),
@@ -164,13 +252,25 @@ class AppState {
   static Map<int, List<ReassuranceData>> getMessagesFor(String patientId) =>
       patientMessages[patientId] ?? _defaultMessages();
 
+  static bool hasVoiceRecordingFor(String patientId) {
+    final messages = patientMessages[patientId];
+    if (messages == null) return false;
+    return messages.values.any(
+      (list) => list.any((m) => m.hasRecording && m.recordingPath != null),
+    );
+  }
+
   static ReassuranceData getRandomMessageFor({
     required String patientId,
     required int situationIndex,
   }) {
     final messagesBySituation = getMessagesFor(patientId);
-    final options =
-        messagesBySituation[situationIndex] ?? _defaultMessages()[situationIndex] ?? const [];
+    // Only pick messages that have an actual voice recording
+    final allOptions = messagesBySituation[situationIndex] ?? [];
+    final withRecording = allOptions
+        .where((m) => m.hasRecording && m.recordingPath != null)
+        .toList();
+    final options = withRecording.isNotEmpty ? withRecording : allOptions;
     if (options.isEmpty) {
       return ReassuranceData(
         headline: "You're safe.",
@@ -237,6 +337,7 @@ class AppState {
     final id = 'patient_${DateTime.now().millisecondsSinceEpoch}';
     patients.add(PatientProfile(id: id, name: name, notes: notes));
     patientMessages[id] = _defaultMessages();
+    patientUsageStats[id] = PatientUsageStats();
   }
 
   static void completeSignup({required String name, required bool isCaregiver}) {
@@ -270,6 +371,8 @@ class AppState {
     required bool hasRecording,
     required int recordingDurationSeconds,
     String? recordingPath,
+    String? mediaPath,
+    bool isVideo = false,
   }) {
     for (final pid in patientIds) {
       patientMessages.putIfAbsent(pid, _defaultMessages);
@@ -289,6 +392,8 @@ class AppState {
             recordingDurationSeconds:
                 hasRecording ? recordingDurationSeconds : 0,
             recordingPath: hasRecording ? recordingPath : null,
+            mediaPath: mediaPath,
+            isVideo: isVideo,
           ),
         );
       }

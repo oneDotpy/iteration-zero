@@ -4,13 +4,16 @@ import 'package:flutter/widget_previews.dart';
 import 'theme/app_theme.dart';
 import 'app_state.dart';
 import 'screens/welcome_screen.dart';
+import 'services/widget_service.dart';
 
 final themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
 /// Increment this whenever a setting (other than theme) changes to force a
 /// full app rebuild so MediaQuery / AppColors re-reads AppSettings values.
 final settingsNotifier = ValueNotifier<int>(0);
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await WidgetService.init();
   AppSettings.loadForCurrentAccount();
   runApp(const UnscriptedApp());
 }

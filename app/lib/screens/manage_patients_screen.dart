@@ -1,4 +1,5 @@
 // lib/screens/manage_patients_screen.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme/app_colors.dart';
@@ -247,14 +248,19 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                           leading: CircleAvatar(
                             radius: 22,
                             backgroundColor: colors.sageLight,
-                            child: Text(
-                              p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
-                              style: TextStyle(
-                                color: colors.teal,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                              ),
-                            ),
+                            backgroundImage: p.imagePath != null
+                                ? FileImage(File(p.imagePath!))
+                                : null,
+                            child: p.imagePath == null
+                                ? Text(
+                                    p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
+                                    style: TextStyle(
+                                      color: colors.teal,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  )
+                                : null,
                           ),
                           trailing: AppBackButton(
                             onTap: () => _showEditDialog(p),

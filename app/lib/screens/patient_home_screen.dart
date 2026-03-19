@@ -11,6 +11,7 @@ import 'patient_situation_screen.dart';
 import 'patient_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
 import 'settings_screen.dart';
+import '../services/widget_service.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -22,6 +23,45 @@ class PatientHomeScreen extends StatefulWidget {
 class _PatientHomeScreenState extends State<PatientHomeScreen> {
   final Random _random = Random();
   int? _lastVoiceSituationIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    AppState.logPatientEvent(kEventAppOpen);
+    WidgetService.updateCaregiverWidget();
+  }
+
+  static const _actionLabels = {
+    kEventFeelUnsure: '"I feel unsure"',
+    kEventHearVoice: '"Hear a familiar voice"',
+    kEventBreather: '"Take a breather"',
+  };
+
+  void _logAndRefresh(String action) {
+    AppState.logPatientEvent(action);
+    _checkAndNotify(action);
+    WidgetService.updateCaregiverWidget();
+  }
+
+  void _checkAndNotify(String action) {
+    final stats = AppState.getUsageFor(AppState.defaultPatientId);
+    final triggered = stats.checkThreshold(action);
+    if (triggered == null || !mounted) return;
+    final label = _actionLabels[triggered] ?? triggered;
+    final count = stats.alertThresholds[triggered] ?? 0;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '${AppState.patientName} has used $label $count+ times today.',
+          style: const TextStyle(fontSize: 14),
+        ),
+        backgroundColor: const Color(0xFF6B8F71),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
 
   int _nextRandomVoiceSituationIndex() {
     const options = [0, 1, 2, 3];
@@ -114,51 +154,58 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                   PrimaryCtaButton(
                     label: 'I feel unsure',
                     icon: Icons.help_outline_rounded,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PatientSituationScreen(),
-                      ),
-                    ),
-                    color: colors.rose,
-                    // Make button taller
-                    key: const ValueKey('tall1'),
-                    height: 72,
-                  ),
-                  const SizedBox(height: 10),
-                  PrimaryCtaButton(
-                    label: 'Hear a familiar voice',
-                    icon: Icons.volume_up_outlined,
                     onTap: () {
-                      final randomIndex = _nextRandomVoiceSituationIndex();
+                      _logAndRefresh(kEventFeelUnsure);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PatientReassuranceScreen(
-                            situationIndex: randomIndex,
-                          ),
+                          builder: (_) => const PatientSituationScreen(),
                         ),
                       );
                     },
-                    color: colors.sage,
-                    // Make button taller
-                    key: const ValueKey('tall2'),
+                    color: colors.rose,
+                    key: const ValueKey('tall1'),
                     height: 72,
                   ),
+                  if (AppState.hasVoiceRecordingFor(AppState.defaultPatientId)) ...[
+                    const SizedBox(height: 10),
+                    PrimaryCtaButton(
+                      label: 'Hear a familiar voice',
+                      icon: Icons.volume_up_outlined,
+                      onTap: () {
+                        AppState.logPatientEvent(kEventHearVoice);
+                        _checkAndNotify(kEventHearVoice);
+                        final randomIndex = _nextRandomVoiceSituationIndex();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PatientReassuranceScreen(
+                              situationIndex: randomIndex,
+                            ),
+                          ),
+                        );
+                      },
+                      color: colors.sage,
+                      key: const ValueKey('tall2'),
+                      height: 72,
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   PrimaryCtaButton(
                     label: 'Take a breather',
                     icon: Icons.air,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const BreatherIntroScreen(
-                          isCaregiver: false,
+                    onTap: () {
+                      _logAndRefresh(kEventBreather);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BreatherIntroScreen(
+                            isCaregiver: false,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                     color: colors.primary,
-                    // Make button taller
                     key: const ValueKey('tall3'),
                     height: 72,
                   ),

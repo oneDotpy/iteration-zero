@@ -9,6 +9,7 @@ import 'guidance_topic_screen.dart';
 import 'send_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
 import 'manage_patients_screen.dart';
+import 'patient_activity_screen.dart';
 import 'settings_screen.dart';
 import '../main.dart';
 
@@ -225,6 +226,27 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
                   MaterialPageRoute(
                       builder: (_) => const ManagePatientsScreen()),
                 ),
+              ),
+
+              const SizedBox(height: 10),
+
+              DashboardActionCard(
+                title: 'Activity & alerts',
+                subtitle: 'Usage history & notification thresholds',
+                icon: Icons.bar_chart_rounded,
+                color: colors.sage,
+                onTap: () {
+                  final patient = AppState.patients.isNotEmpty
+                      ? AppState.patients.first
+                      : null;
+                  if (patient == null) return;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PatientActivityScreen(patient: patient),
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 20),

@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/primary_cta_button.dart';
 import '../widgets/primary_icon_button.dart';
 import '../theme/app_colors.dart';
@@ -18,6 +20,52 @@ class ManagePatientsProfileScreen extends StatefulWidget {
 }
 
 class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScreen> {
+
+	final _picker = ImagePicker();
+
+	Future<void> _pickPhoto() async {
+		final source = await showModalBottomSheet<ImageSource>(
+			context: context,
+			shape: const RoundedRectangleBorder(
+				borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+			),
+			builder: (ctx) => SafeArea(
+				child: Column(
+					mainAxisSize: MainAxisSize.min,
+					children: [
+						const SizedBox(height: 8),
+						ListTile(
+							leading: const Icon(Icons.camera_alt_outlined),
+							title: const Text('Take a photo'),
+							onTap: () => Navigator.pop(ctx, ImageSource.camera),
+						),
+						ListTile(
+							leading: const Icon(Icons.photo_library_outlined),
+							title: const Text('Choose from library'),
+							onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+						),
+						if (widget.patient.imagePath != null)
+							ListTile(
+								leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
+								title: const Text('Remove photo', style: TextStyle(color: Colors.redAccent)),
+								onTap: () => Navigator.pop(ctx, null),
+							),
+						const SizedBox(height: 8),
+					],
+				),
+			),
+		);
+		if (!mounted) return;
+		if (source == null && widget.patient.imagePath != null) {
+			setState(() => widget.patient.imagePath = null);
+			return;
+		}
+		if (source == null) return;
+		final file = await _picker.pickImage(source: source, imageQuality: 85);
+		if (file != null && mounted) {
+			setState(() => widget.patient.imagePath = file.path);
+		}
+	}
 
 	void _showEditDialog() {
 		final patient = widget.patient;
@@ -145,18 +193,34 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 										],
 									),
 									const SizedBox(height: 24),
-									CircleAvatar(
-										radius: 60,
-										backgroundColor: colors.surface,
-										child: Text(
-											patient.name.isNotEmpty
-													? patient.name[0].toUpperCase()
-													: '?',
-											style: TextStyle(
-												fontSize: 44,
-												fontWeight: FontWeight.bold,
-												color: colors.teal,
-											),
+									GestureDetector(
+										onTap: _pickPhoto,
+										child: Stack(
+											alignment: Alignment.bottomRight,
+											children: [
+												CircleAvatar(
+													radius: 60,
+													backgroundColor: colors.surface,
+													backgroundImage: patient.imagePath != null
+														? FileImage(File(patient.imagePath!))
+														: null,
+													child: patient.imagePath == null
+														? Text(
+																patient.name.isNotEmpty ? patient.name[0].toUpperCase() : '?',
+																style: TextStyle(fontSize: 44, fontWeight: FontWeight.bold, color: colors.teal),
+															)
+														: null,
+												),
+												Container(
+													decoration: BoxDecoration(
+														color: colors.teal,
+														shape: BoxShape.circle,
+														border: Border.all(color: colors.tealLight, width: 2),
+													),
+													padding: const EdgeInsets.all(6),
+													child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+												),
+											],
 										),
 									),
 									const SizedBox(height: 16),

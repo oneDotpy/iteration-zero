@@ -25,6 +25,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
+  bool _agreedToTerms = false;
   String _role = 'caregiver'; // 'caregiver' or 'patient'
   String? _nameError;
   String? _emailError;
@@ -45,6 +46,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
     final name = _nameController.text.trim();
+
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please agree to the Terms & Privacy Policy.'),
+          backgroundColor: Colors.redAccent.shade200,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
 
     final valid = _validateForm(
       name: name,
@@ -122,6 +135,96 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         _confirmPasswordError = 'Passwords do not match.';
       }
     });
+  }
+
+  void _showTerms(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        maxChildSize: 0.95,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (_, controller) => Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Terms of Service & Privacy Policy',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Last updated: March 2026',
+              style: TextStyle(fontSize: 12, color: Colors.black45),
+            ),
+            const Divider(height: 24),
+            Expanded(
+              child: ListView(
+                controller: controller,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: const [
+                  _TermsSection(
+                    title: '1. Purpose of the App',
+                    body:
+                        'This app is designed to support caregivers and individuals living with dementia or memory loss. It is a communication and wellbeing tool — not a medical device or substitute for professional medical advice.',
+                  ),
+                  _TermsSection(
+                    title: '2. Data We Collect',
+                    body:
+                        'We collect only what is necessary to provide the service: your name, email address, and usage activity within the app (e.g., which features are used). We do not sell your data to third parties.',
+                  ),
+                  _TermsSection(
+                    title: '3. How We Use Your Data',
+                    body:
+                        'Usage data is shared between linked caregiver and care recipient accounts to help caregivers support their loved ones. Audio recordings you create stay on your device and are never uploaded to external servers.',
+                  ),
+                  _TermsSection(
+                    title: '4. Privacy & Security',
+                    body:
+                        'Your account is protected by the password you choose. We encourage you to use a strong password. We take reasonable steps to protect your information, but no system is completely secure.',
+                  ),
+                  _TermsSection(
+                    title: '5. Care Recipient Consent',
+                    body:
+                        'By registering a care recipient account, you confirm that the individual (or their legal guardian) has consented to use this app and to share their usage activity with the linked caregiver account.',
+                  ),
+                  _TermsSection(
+                    title: '6. Voice Recordings',
+                    body:
+                        'Voice recordings you create are stored locally on your device. You are responsible for obtaining consent from anyone whose voice is recorded. You may delete recordings at any time.',
+                  ),
+                  _TermsSection(
+                    title: '7. Changes to These Terms',
+                    body:
+                        'We may update these terms from time to time. Continued use of the app after changes means you accept the updated terms.',
+                  ),
+                  _TermsSection(
+                    title: '8. Contact',
+                    body:
+                        'If you have questions or concerns about your privacy, please contact us through the app\'s feedback option in Settings.',
+                  ),
+                  SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -433,6 +536,57 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
               ),
 
+              const SizedBox(height: 16),
+
+              // Terms & Privacy checkbox
+              GestureDetector(
+                onTap: () => setState(() => _agreedToTerms = !_agreedToTerms),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: _agreedToTerms ? const Color(0xFFFFDD8F) : Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: _agreedToTerms ? const Color(0xFFFFDD8F) : Colors.black26,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: _agreedToTerms
+                          ? const Icon(Icons.check, size: 14, color: Colors.black)
+                          : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Wrap(
+                        children: [
+                          const Text(
+                            'I agree to the ',
+                            style: TextStyle(fontSize: 13, color: Colors.black54),
+                          ),
+                          GestureDetector(
+                            onTap: () => _showTerms(context),
+                            child: const Text(
+                              'Terms of Service & Privacy Policy',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 24),
 
               // Create Account button
@@ -499,6 +653,33 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TermsSection extends StatelessWidget {
+  final String title;
+  final String body;
+  const _TermsSection({required this.title, required this.body});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            body,
+            style: const TextStyle(fontSize: 14, color: Colors.black54, height: 1.5),
+          ),
+        ],
       ),
     );
   }
