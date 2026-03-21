@@ -5,6 +5,7 @@ import '../widgets/primary_cta_button.dart';
 import '../widgets/primary_icon_button.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import 'patient_activity_screen.dart';
 
 class ManagePatientsProfileScreen extends StatefulWidget {
 	final PatientProfile patient;
@@ -137,11 +138,19 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 		);
 	}
 
+	void _openActivity() {
+		Navigator.push(
+			context,
+			MaterialPageRoute(
+				builder: (_) => PatientActivityScreen(patient: widget.patient),
+			),
+		);
+	}
+
 	@override
 	Widget build(BuildContext context) {
 		final patient = widget.patient;
 		final colors = context.appColors;
-
 
 		return Scaffold(
 			body: SafeArea(
@@ -150,11 +159,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 				child: Column(
 					crossAxisAlignment: CrossAxisAlignment.stretch,
 					children: [
-						// Fill the top SafeArea (dynamic island) with tealLight
-						Container(
-							color: colors.tealLight,
-							height: MediaQuery.of(context).padding.top,
-						),
+						// ── Header ────────────────────────────────────────────────
 						Container(
 							width: double.infinity,
 							decoration: BoxDecoration(
@@ -177,7 +182,6 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 									Row(
 										mainAxisAlignment: MainAxisAlignment.spaceBetween,
 										children: [
-											
 											AppBackButton(
 												onTap: () => Navigator.pop(context),
 												color: colors.teal,
@@ -232,30 +236,122 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 											fontWeight: FontWeight.bold,
 										),
 									),
+									const SizedBox(height: 4),
 								],
 							),
 						),
+
+						// ── Scrollable body ───────────────────────────────────────
 						Expanded(
-              
 							child: SingleChildScrollView(
 								padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
 								child: Column(
 									crossAxisAlignment: CrossAxisAlignment.stretch,
 									children: [
-										Text(
-											patient.notes.isEmpty ? 'No notes yet.' : patient.notes,
-											textAlign: TextAlign.center,
-											style: TextStyle(
-												fontSize: 18,
-												color: colors.textMed,
-												height: 1.4,
+
+										// ── Activity card ─────────────────────────────────
+										GestureDetector(
+											onTap: _openActivity,
+											child: Container(
+												padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+												decoration: BoxDecoration(
+													color: colors.teal,
+													borderRadius: BorderRadius.circular(16),
+													boxShadow: [
+														BoxShadow(
+															color: colors.teal.withOpacity(0.25),
+															blurRadius: 12,
+															offset: const Offset(0, 4),
+														),
+													],
+												),
+												child: Row(
+													children: [
+														Container(
+															width: 42,
+															height: 42,
+															decoration: BoxDecoration(
+																color: Colors.white.withOpacity(0.20),
+																shape: BoxShape.circle,
+															),
+															child: const Icon(
+																Icons.bar_chart_rounded,
+																color: Colors.white,
+																size: 22,
+															),
+														),
+														const SizedBox(width: 14),
+														Expanded(
+															child: Column(
+																crossAxisAlignment: CrossAxisAlignment.start,
+																children: [
+																	const Text(
+																		'View Activity',
+																		style: TextStyle(
+																			fontSize: 16,
+																			fontWeight: FontWeight.w700,
+																			color: Colors.white,
+																		),
+																	),
+																	Text(
+																		'Today\'s usage & weekly trends',
+																		style: TextStyle(
+																			fontSize: 13,
+																			color: Colors.white.withOpacity(0.75),
+																		),
+																	),
+																],
+															),
+														),
+														Icon(
+															Icons.chevron_right_rounded,
+															color: Colors.white.withOpacity(0.75),
+															size: 22,
+														),
+													],
+												),
 											),
 										),
+
+										const SizedBox(height: 24),
+
+										// ── Notes ─────────────────────────────────────────
+										if (patient.notes.isNotEmpty) ...[
+											Text(
+												'Notes',
+												style: TextStyle(
+													fontSize: 12,
+													fontWeight: FontWeight.w700,
+													color: colors.textLow,
+													letterSpacing: 1.2,
+												),
+											),
+											const SizedBox(height: 8),
+											Text(
+												patient.notes,
+												textAlign: TextAlign.left,
+												style: TextStyle(
+													fontSize: 16,
+													color: colors.textMed,
+													height: 1.5,
+												),
+											),
+										] else
+											Text(
+												'No notes yet. Tap the edit button to add notes.',
+												textAlign: TextAlign.center,
+												style: TextStyle(
+													fontSize: 15,
+													color: colors.textLow,
+													height: 1.4,
+												),
+											),
 									],
 								),
 							),
-							
 						),
+
+						// ── Done button ───────────────────────────────────────────
 						Container(
 							padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
 							child: PrimaryCtaButton(
@@ -263,7 +359,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 								onTap: () => Navigator.pop(context),
 								color: colors.teal,
 							),
-						)
+						),
 					],
 				),
 			),
