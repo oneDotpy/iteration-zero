@@ -4,13 +4,17 @@ import 'package:flutter/widget_previews.dart';
 import 'theme/app_theme.dart';
 import 'app_state.dart';
 import 'screens/welcome_screen.dart';
+import 'screens/caregiver_home_screen.dart';
+import 'screens/patient_home_screen.dart';
+import 'screens/patient_activity_screen.dart';
+import 'services/widget_service.dart';
 
 final themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
-/// Increment this whenever a setting (other than theme) changes to force a
-/// full app rebuild so MediaQuery / AppColors re-reads AppSettings values.
 final settingsNotifier = ValueNotifier<int>(0);
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await WidgetService.init();
   AppSettings.loadForCurrentAccount();
   runApp(const UnscriptedApp());
 }
@@ -69,7 +73,6 @@ class UnscriptedApp extends StatelessWidget {
   }
 }
 
-// Custom PageTransitionsBuilder that disables transitions if reduced motion is enabled.
 class _NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
   const _NoAnimationPageTransitionsBuilder();
 
@@ -81,18 +84,53 @@ class _NoAnimationPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    if (AppSettings.reducedMotion) {
-      return child;
-    }
-    // Use the default Material fade upwards transition for non-reduced motion
+    if (AppSettings.reducedMotion) return child;
     return const FadeUpwardsPageTransitionsBuilder()
         .buildTransitions(route, context, animation, secondaryAnimation, child);
   }
 }
 
-// Preview for the welcome screen
-@Preview(
-  name: 'Welcome Screen',
-  size: Size(400, 750),
-)
+// ── Helper: wraps any screen in the full app shell so previews work ──────────
+Widget _preview(Widget screen) {
+  // Seed some demo state so the preview has something to show
+  if (AppState.patients.isEmpty) {
+    AppState.patients.add(
+      PatientProfile(id: AppState.defaultPatientId, name: 'Margaret'),
+    );
+  }
+  AppState.loggedInName = 'Alex';
+  AppState.loggedInRole = 'caregiver';
+
+  return ValueListenableBuilder<ThemeMode>(
+    valueListenable: themeNotifier,
+    builder: (context, mode, _) => MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: mode,
+      home: screen,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(AppSettings.textScale),
+        ),
+        child: child!,
+      ),
+    ),
+  );
+}
+
+// ── Previews ──────────────────────────────────────────────────────────────────
+
+@Preview(name: 'Welcome Screen', size: Size(400, 750))
 Widget welcomePreview() => const UnscriptedApp();
+
+@Preview(name: 'Caregiver Home', size: Size(400, 750))
+Widget caregiverHomePreview() => _preview(const CaregiverHomeScreen());
+
+@Preview(name: 'Patient Home', size: Size(400, 750))
+Widget patientHomePreview() => _preview(const PatientHomeScreen());
+
+@Preview(name: 'Patient Activity', size: Size(400, 750))
+Widget patientActivityPreview() => _preview(
+      PatientActivityScreen(patient: AppState.patients.first),
+    );

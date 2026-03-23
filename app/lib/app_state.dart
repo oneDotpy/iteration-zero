@@ -7,7 +7,7 @@ class _UserAccount {
   final String email;
   final String password;
   final String name;
-  final String role; // 'caregiver' or 'patient'
+  final String role;
   _UserAccount({
     required this.email,
     required this.password,
@@ -17,17 +17,15 @@ class _UserAccount {
 }
 
 class AppSettings {
-  // Defaults: dark mode off, high contrast off, reduced motion off
-  static ThemeMode themeMode = ThemeMode.light; // Light mode (dark mode off)
+  static ThemeMode themeMode = ThemeMode.light;
   static bool narrationEnabled = true;
   static double textScale = 1.2;
-  static bool highContrastMode = false; // High contrast off
-  static bool reducedMotion = false; // Reduced motion off
+  static bool highContrastMode = false;
+  static bool reducedMotion = false;
   static bool voiceGuidanceEnabled = true;
   static double narrationSpeed = 1.0;
   static double narrationVolume = 1.0;
 
-  // Store settings per account (by email)
   static final Map<String, Map<String, dynamic>> _accountSettings = {};
 
   static void saveForCurrentAccount() {
@@ -61,12 +59,121 @@ class AppSettings {
   }
 }
 
+// ── Usage tracking ────────────────────────────────────────────────────────────
+
+const String kEventAppOpen = 'app_open';
+const String kEventFeelUnsure = 'feel_unsure';
+const String kEventHearVoice = 'hear_voice';
+const String kEventBreather = 'breather';
+
+class UsageEvent {
+  final String action;
+  final DateTime timestamp;
+  UsageEvent({required this.action, required this.timestamp});
+}
+
+/// An alert that fired when a threshold was crossed.
+/// [seenOnHome] is true once the caregiver dismisses it from the home card —
+/// it stays in the list so the activity screen can still show it.
+class PendingAlert {
+  final String action;
+  final int count;
+  final DateTime firedAt;
+  bool seenOnHome;
+
+  PendingAlert({
+    required this.action,
+    required this.count,
+    required this.firedAt,
+    this.seenOnHome = false,
+  });
+}
+
+class PatientUsageStats {
+  final List<UsageEvent> events = [];
+  Map<String, int> alertThresholds = {
+    kEventFeelUnsure: 5,
+    kEventHearVoice: 5,
+    kEventBreather: 5,
+  };
+  final Set<String> _notifiedToday = {};
+  final List<PendingAlert> _alerts = [];
+
+  /// All alerts — used by activity screen (shows everything).
+  List<PendingAlert> get pendingAlerts => List.unmodifiable(_alerts);
+
+  /// Only alerts not yet dismissed from home — used by home screen card.
+  List<PendingAlert> get unseenAlerts =>
+      _alerts.where((a) => !a.seenOnHome).toList();
+
+  /// Mark all alerts as seen on home (hides them from home card).
+  void dismissFromHome() {
+    for (final a in _alerts) {
+      a.seenOnHome = true;
+    }
+  }
+
+  /// Fully remove all alerts (used when clearing activity screen if needed).
+  void clearPendingAlerts() => _alerts.clear();
+
+  void log(String action) =>
+      events.add(UsageEvent(action: action, timestamp: DateTime.now()));
+
+  int countToday(String action) {
+    final today = _startOfToday();
+    return events
+        .where((e) => e.action == action && !e.timestamp.isBefore(today))
+        .length;
+  }
+
+  int countTotal(String action) =>
+      events.where((e) => e.action == action).length;
+
+  String? checkThreshold(String action) {
+    final threshold = alertThresholds[action];
+    if (threshold == null) return null;
+    final todayKey = '${action}_${_startOfToday().toIso8601String()}';
+    if (_notifiedToday.contains(todayKey)) return null;
+    if (countToday(action) >= threshold) {
+      _notifiedToday.add(todayKey);
+      _alerts.add(PendingAlert(
+        action: action,
+        count: threshold,
+        firedAt: DateTime.now(),
+      ));
+      return action;
+    }
+    return null;
+  }
+
+  static DateTime _startOfToday() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  Map<String, List<int>> weeklyBreakdown() {
+    final result = <String, List<int>>{};
+    for (final action in [kEventFeelUnsure, kEventHearVoice, kEventBreather, kEventAppOpen]) {
+      final counts = List<int>.filled(7, 0);
+      for (final e in events) {
+        final daysAgo = DateTime.now().difference(e.timestamp).inDays;
+        if (e.action == action && daysAgo < 7) {
+          counts[6 - daysAgo]++;
+        }
+      }
+      result[action] = counts;
+    }
+    return result;
+  }
+}
+
 class PatientProfile {
   final String id;
   String name;
   String notes;
+  String? imagePath;
 
-  PatientProfile({required this.id, required this.name, this.notes = ''});
+  PatientProfile({required this.id, required this.name, this.notes = '', this.imagePath});
 }
 
 class ReassuranceData {
@@ -75,6 +182,8 @@ class ReassuranceData {
   bool hasRecording;
   int recordingDurationSeconds;
   String? recordingPath;
+  String? mediaPath;
+  bool isVideo;
 
   ReassuranceData({
     required this.headline,
@@ -82,11 +191,12 @@ class ReassuranceData {
     this.hasRecording = false,
     this.recordingDurationSeconds = 0,
     this.recordingPath,
+    this.mediaPath,
+    this.isVideo = false,
   });
 }
 
 class AppState {
-  // ── Demo credentials ──────────────────────────────────────────────────────
   static const _demoCaregiverEmail = 'caregiver@gmail.com';
   static const _demoCaregiverPassword = 'caregiver';
   static const _demoCaregiverName = 'Alex';
@@ -94,7 +204,6 @@ class AppState {
   static const _demoPatientPassword = 'patient';
   static const _demoPatientName = 'Margaret';
 
-  // ── Dynamic account store ─────────────────────────────────────────────────
   static final List<_UserAccount> _accounts = [
     _UserAccount(
       email: _demoCaregiverEmail,
@@ -110,26 +219,34 @@ class AppState {
     ),
   ];
 
-  // ── Session state ─────────────────────────────────────────────────────────
   static String loggedInName = '';
   static String loggedInEmail = '';
   static String loggedInRole = '';
 
-  // ── Name getters (dynamic after login/register) ───────────────────────────
   static String get caregiverName =>
       loggedInName.isNotEmpty ? loggedInName : _demoCaregiverName;
   static String get patientName =>
       loggedInName.isNotEmpty ? loggedInName : _demoPatientName;
 
-  // The logged-in patient account always maps to this ID for reassurance lookups
   static const defaultPatientId = 'patient_default';
 
-  // ── Patient list ──────────────────────────────────────────────────────────
   static List<PatientProfile> patients = [
     PatientProfile(id: defaultPatientId, name: _demoPatientName),
   ];
 
-  // Per-patient reassurance messages: patientId -> situationIndex -> message list
+  static Map<String, PatientUsageStats> patientUsageStats = {
+    defaultPatientId: PatientUsageStats(),
+  };
+
+  static PatientUsageStats getUsageFor(String patientId) =>
+      patientUsageStats.putIfAbsent(patientId, PatientUsageStats.new);
+
+  static void logPatientEvent(String action, {String? patientId}) {
+    final stats = getUsageFor(patientId ?? defaultPatientId);
+    stats.log(action);
+    stats.checkThreshold(action);
+  }
+
   static Map<String, Map<int, List<ReassuranceData>>> patientMessages = {
     defaultPatientId: _defaultMessages(),
   };
@@ -164,13 +281,24 @@ class AppState {
   static Map<int, List<ReassuranceData>> getMessagesFor(String patientId) =>
       patientMessages[patientId] ?? _defaultMessages();
 
+  static bool hasVoiceRecordingFor(String patientId) {
+    final messages = patientMessages[patientId];
+    if (messages == null) return false;
+    return messages.values.any(
+      (list) => list.any((m) => m.hasRecording && m.recordingPath != null),
+    );
+  }
+
   static ReassuranceData getRandomMessageFor({
     required String patientId,
     required int situationIndex,
   }) {
     final messagesBySituation = getMessagesFor(patientId);
-    final options =
-        messagesBySituation[situationIndex] ?? _defaultMessages()[situationIndex] ?? const [];
+    final allOptions = messagesBySituation[situationIndex] ?? [];
+    final withRecording = allOptions
+        .where((m) => m.hasRecording && m.recordingPath != null)
+        .toList();
+    final options = withRecording.isNotEmpty ? withRecording : allOptions;
     if (options.isEmpty) {
       return ReassuranceData(
         headline: "You're safe.",
@@ -181,9 +309,6 @@ class AppState {
     return options[random.nextInt(options.length)];
   }
 
-  // ── Auth ──────────────────────────────────────────────────────────────────
-
-  /// Returns 'caregiver', 'patient', or null on failure.
   static String? login(String email, String password) {
     final e = email.trim().toLowerCase();
     for (final acc in _accounts) {
@@ -191,16 +316,13 @@ class AppState {
         loggedInName = acc.name;
         loggedInEmail = acc.email;
         loggedInRole = acc.role;
-        // If this account has no saved settings, save defaults now
         if (!AppSettings._accountSettings.containsKey(acc.email)) {
           AppSettings.themeMode = ThemeMode.light;
           AppSettings.highContrastMode = false;
           AppSettings.reducedMotion = false;
           AppSettings.saveForCurrentAccount();
         }
-        // Load settings for this account
         AppSettings.loadForCurrentAccount();
-        // Ensure themeNotifier is updated to match loaded settings
         try {
           themeNotifier.value = AppSettings.themeMode;
         } catch (_) {}
@@ -210,7 +332,6 @@ class AppState {
     return null;
   }
 
-  /// Registers a new account and logs them in. Returns the role string.
   static String register({
     required String email,
     required String password,
@@ -226,25 +347,21 @@ class AppState {
     loggedInName = displayName;
     loggedInEmail = e;
     loggedInRole = role;
-    // Save default settings for new account
     AppSettings.saveForCurrentAccount();
     return role;
   }
-
-  // ── Patient management ────────────────────────────────────────────────────
 
   static void addPatient({required String name, String notes = ''}) {
     final id = 'patient_${DateTime.now().millisecondsSinceEpoch}';
     patients.add(PatientProfile(id: id, name: name, notes: notes));
     patientMessages[id] = _defaultMessages();
+    patientUsageStats[id] = PatientUsageStats();
   }
 
   static void completeSignup({required String name, required bool isCaregiver}) {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return;
-
     loggedInName = trimmed;
-
     if (!isCaregiver) {
       final index = patients.indexWhere((p) => p.id == defaultPatientId);
       if (index >= 0) {
@@ -253,13 +370,12 @@ class AppState {
     }
   }
 
-  static void resetDisplayNamesToDefaults() {
-    // no-op: names are managed via loggedInName and _accounts
-  }
+  static void resetDisplayNamesToDefaults() {}
 
   static void removePatient(String id) {
     patients.removeWhere((p) => p.id == id);
     patientMessages.remove(id);
+    patientUsageStats.remove(id);
   }
 
   static void saveReassurance({
@@ -270,6 +386,8 @@ class AppState {
     required bool hasRecording,
     required int recordingDurationSeconds,
     String? recordingPath,
+    String? mediaPath,
+    bool isVideo = false,
   }) {
     for (final pid in patientIds) {
       patientMessages.putIfAbsent(pid, _defaultMessages);
@@ -279,7 +397,6 @@ class AppState {
         final trimmedHeadline = headline.trim();
         final trimmedSubtext = subtext.trim();
         final defaultSubtext = _defaultMessages()[i]?.first.subtext ?? '';
-
         existingList.add(
           ReassuranceData(
             headline: trimmedHeadline,
@@ -289,6 +406,8 @@ class AppState {
             recordingDurationSeconds:
                 hasRecording ? recordingDurationSeconds : 0,
             recordingPath: hasRecording ? recordingPath : null,
+            mediaPath: mediaPath,
+            isVideo: isVideo,
           ),
         );
       }

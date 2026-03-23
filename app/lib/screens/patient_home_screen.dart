@@ -11,6 +11,7 @@ import 'patient_situation_screen.dart';
 import 'patient_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
 import 'settings_screen.dart';
+import '../services/widget_service.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -23,6 +24,22 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   final Random _random = Random();
   int? _lastVoiceSituationIndex;
 
+  @override
+  void initState() {
+    super.initState();
+    final patientId = AppState.patients.first.id;
+    AppState.logPatientEvent(kEventAppOpen, patientId: patientId);
+    WidgetService.updateCaregiverWidget();
+  }
+
+  void _logEvent(String action) {
+    final patientId = AppState.patients.first.id;
+    // logPatientEvent now internally checks thresholds and stores
+    // any pending alerts for the caregiver — nothing shown to patient.
+    AppState.logPatientEvent(action, patientId: patientId);
+    WidgetService.updateCaregiverWidget();
+  }
+
   int _nextRandomVoiceSituationIndex() {
     const options = [0, 1, 2, 3];
     if (_lastVoiceSituationIndex == null) {
@@ -30,8 +47,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       _lastVoiceSituationIndex = first;
       return first;
     }
-
-    final filtered = options.where((i) => i != _lastVoiceSituationIndex).toList();
+    final filtered =
+        options.where((i) => i != _lastVoiceSituationIndex).toList();
     final next = filtered[_random.nextInt(filtered.length)];
     _lastVoiceSituationIndex = next;
     return next;
@@ -51,7 +68,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Top row: sign-out + settings
                   Row(
                     children: [
                       const Spacer(),
@@ -61,14 +77,14 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const SettingsScreen(isCaregiver: false),
+                            builder: (_) =>
+                                const SettingsScreen(isCaregiver: false),
                           ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Greeting
                   Text(
                     'Hi, ${AppState.loggedInName.isNotEmpty ? AppState.loggedInName : AppState.patientName}',
                     style: TextStyle(
@@ -90,7 +106,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-                  // Avatar circle
                   Container(
                     width: 100,
                     height: 100,
@@ -110,18 +125,19 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Buttons
                   PrimaryCtaButton(
                     label: 'I feel unsure',
                     icon: Icons.help_outline_rounded,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PatientSituationScreen(),
-                      ),
-                    ),
+                    onTap: () {
+                      _logEvent(kEventFeelUnsure);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PatientSituationScreen(),
+                        ),
+                      );
+                    },
                     color: colors.rose,
-                    // Make button taller
                     key: const ValueKey('tall1'),
                     height: 72,
                   ),
@@ -130,6 +146,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     label: 'Hear a familiar voice',
                     icon: Icons.volume_up_outlined,
                     onTap: () {
+                      _logEvent(kEventHearVoice);
                       final randomIndex = _nextRandomVoiceSituationIndex();
                       Navigator.push(
                         context,
@@ -141,7 +158,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       );
                     },
                     color: colors.sage,
-                    // Make button taller
                     key: const ValueKey('tall2'),
                     height: 72,
                   ),
@@ -149,26 +165,27 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                   PrimaryCtaButton(
                     label: 'Take a breather',
                     icon: Icons.air,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const BreatherIntroScreen(
-                          isCaregiver: false,
+                    onTap: () {
+                      _logEvent(kEventBreather);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BreatherIntroScreen(
+                            isCaregiver: false,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                     color: colors.primary,
-                    // Make button taller
                     key: const ValueKey('tall3'),
                     height: 72,
                   ),
                   const SizedBox(height: 20),
-                  // Voice input bar
                   VoiceInputBar(color: colors.rose),
                   const Spacer(),
-                  // Patient mode badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 7),
                     decoration: BoxDecoration(
                       color: colors.rose.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(20),
@@ -176,11 +193,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.person_outline,
-                          color: colors.rose,
-                          size: 14,
-                        ),
+                        Icon(Icons.person_outline,
+                            color: colors.rose, size: 14),
                         const SizedBox(width: 6),
                         Text(
                           'Care Recipient View',
@@ -202,5 +216,4 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       },
     );
   }
-
 }

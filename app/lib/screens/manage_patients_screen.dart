@@ -1,9 +1,9 @@
 // lib/screens/manage_patients_screen.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/primary_icon_button.dart';
-import '../widgets/dashboard_action_card.dart';
 import 'manage_patients_profile_screen.dart';
 
 class ManagePatientsScreen extends StatefulWidget {
@@ -29,21 +29,13 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
           children: [
             TextField(
               controller: nameController,
-              decoration: _inputDecoration(
-                'Name',
-                colors,
-                focusedBorderColor: colors.teal,
-              ),
+              decoration: _inputDecoration('Name', colors),
               textCapitalization: TextCapitalization.words,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: notesController,
-              decoration: _inputDecoration(
-                'Notes (optional)',
-                colors,
-                focusedBorderColor: colors.teal,
-              ),
+              decoration: _inputDecoration('Notes (optional)', colors),
               maxLines: 2,
             ),
           ],
@@ -51,10 +43,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: colors.teal),
-            ),
+            child: Text('Cancel', style: TextStyle(color: colors.teal)),
           ),
           FilledButton(
             onPressed: () {
@@ -80,90 +69,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
     );
   }
 
-  void _showEditDialog(dynamic patient) {
-    final colors = context.appColors;
-    final nameController = TextEditingController(text: patient.name);
-    final notesController = TextEditingController(text: patient.notes ?? '');
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.background,
-        title: const Text('Edit care recipient'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: _inputDecoration(
-                'Name',
-                colors,
-                focusedBorderColor: colors.teal,
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: notesController,
-              decoration: _inputDecoration(
-                'Notes (optional)',
-                colors,
-                focusedBorderColor: colors.teal,
-              ),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              AppState.removePatient(patient.id);
-              Navigator.pop(ctx);
-              if (mounted) Navigator.pop(context, true);
-            },
-            child: Text('Remove', style: TextStyle(color: colors.rose)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: colors.teal),
-            ),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isEmpty) return;
-
-              setState(() {
-                patient.name = name;
-                patient.notes = notesController.text.trim();
-              });
-
-              Navigator.pop(ctx);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: colors.teal,
-              foregroundColor: colors.surface,
-              elevation: 0,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-            ),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(
-    String hint,
-    AppColors colors, {
-    Color? focusedBorderColor,
-  }) =>
+  InputDecoration _inputDecoration(String hint, AppColors colors) =>
       InputDecoration(
         hintText: hint,
         filled: true,
@@ -180,10 +86,7 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: focusedBorderColor ?? colors.teal,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: colors.teal, width: 2),
         ),
       );
 
@@ -220,20 +123,29 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
             children: [
               const SizedBox(height: 12),
               patients.isEmpty
-                  ? const Center(child: Text('No care recipients yet.'))
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 40),
+                        child: Text(
+                          'No care recipients yet.\nTap below to add one.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: colors.textMed,
+                              fontSize: 15,
+                              height: 1.5),
+                        ),
+                      ),
+                    )
                   : ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: patients.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 8),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (_, i) {
                         final p = patients[i];
-
-                        return DashboardActionCard(
-                          title: p.name,
-                          subtitle: 'View & edit profile',
-                          backgroundColor: colors.background,
+                        return _PatientCard(
+                          patient: p,
+                          colors: colors,
                           onTap: () async {
                             await Navigator.push(
                               context,
@@ -244,31 +156,13 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                             );
                             if (mounted) setState(() {});
                           },
-                          leading: CircleAvatar(
-                            radius: 22,
-                            backgroundColor: colors.sageLight,
-                            child: Text(
-                              p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
-                              style: TextStyle(
-                                color: colors.teal,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                          trailing: AppBackButton(
-                            onTap: () => _showEditDialog(p),
-                            color: colors.teal,
-                            size: 24,
-                            icon: Icons.edit_outlined,
-                          ),
                         );
                       },
                     ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Center(
                 child: Container(
-                  width: 200,
+                  width: 220,
                   decoration: BoxDecoration(
                     boxShadow: [colors.shadow],
                     borderRadius: BorderRadius.circular(20),
@@ -299,9 +193,97 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Patient card ──────────────────────────────────────────────────────────────
+
+class _PatientCard extends StatelessWidget {
+  final PatientProfile patient;
+  final AppColors colors;
+  final VoidCallback onTap;
+
+  const _PatientCard({
+    required this.patient,
+    required this.colors,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: colors.background,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [colors.shadow],
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            CircleAvatar(
+              radius: 26,
+              backgroundColor: colors.sageLight,
+              backgroundImage: patient.imagePath != null
+                  ? FileImage(File(patient.imagePath!))
+                  : null,
+              child: patient.imagePath == null
+                  ? Text(
+                      patient.name.isNotEmpty
+                          ? patient.name[0].toUpperCase()
+                          : '?',
+                      style: TextStyle(
+                        color: colors.teal,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 14),
+
+            // Name + hint
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    patient.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: colors.textHigh,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Icon(Icons.edit_outlined,
+                          size: 12, color: colors.textLow),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Profile & activity',
+                        style:
+                            TextStyle(fontSize: 12, color: colors.textLow),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Chevron
+            Icon(Icons.chevron_right_rounded,
+                color: colors.textLow, size: 22),
+          ],
         ),
       ),
     );
