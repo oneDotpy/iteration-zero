@@ -15,6 +15,7 @@ import '../widgets/primary_icon_button.dart';
 import '../widgets/primary_cta_button.dart';
 import 'send_reassurance_done_screen.dart';
 import '../services/widget_service.dart';
+import '../services/firebase_service.dart';
 
 enum _RecordingState { idle, recording, saved }
 
@@ -147,13 +148,12 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
       });
       return;
     }
-    AppState.saveReassurance(
+    FirebaseService.saveReassurance(
       patientIds: _selectedPatientIds.toList(),
       situationIndexes: _selectedSituations.toList(),
       headline: _headlineController.text,
       subtext: _subtextController.text,
       hasRecording: _recordingState == _RecordingState.saved,
-      recordingDurationSeconds: _recordingSeconds,
       recordingPath: _recordingPath,
       mediaPath: _mediaPath,
       isVideo: _isVideo,

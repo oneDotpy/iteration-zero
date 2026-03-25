@@ -1,8 +1,10 @@
 // lib/screens/patient_activity_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/primary_icon_button.dart';
+import '../services/firebase_service.dart';
 
 class PatientActivityScreen extends StatefulWidget {
   final PatientProfile patient;
@@ -13,7 +15,8 @@ class PatientActivityScreen extends StatefulWidget {
 }
 
 class _PatientActivityScreenState extends State<PatientActivityScreen> {
-  late final PatientUsageStats _stats;
+  late PatientUsageStats _stats;
+  StreamSubscription<List<UsageEvent>>? _eventsSub;
 
   static const _actions = [
     _ActionMeta(key: kEventFeelUnsure, label: 'I feel unsure', icon: Icons.help_outline_rounded),
@@ -33,6 +36,21 @@ class _PatientActivityScreenState extends State<PatientActivityScreen> {
   void initState() {
     super.initState();
     _stats = AppState.getUsageFor(widget.patient.id);
+    _eventsSub = FirebaseService.patientEventsStream(widget.patient.id).listen((events) {
+      if (!mounted) return;
+      final updated = PatientUsageStats();
+      updated.alertThresholds = Map.from(_stats.alertThresholds);
+      for (final e in events) {
+        updated.events.add(e);
+      }
+      setState(() => _stats = updated);
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventsSub?.cancel();
+    super.dispose();
   }
 
   void _editThreshold(BuildContext context, AppColors colors, _ActionMeta action) {

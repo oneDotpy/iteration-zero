@@ -1,6 +1,6 @@
 // lib/screens/create_account_screen.dart
 import 'package:flutter/material.dart';
-import '../app_state.dart';
+import '../services/firebase_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/soft_card.dart';
 import '../widgets/soft_text_field.dart';
@@ -71,24 +71,34 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
     setState(() => _loading = true);
 
-    final role = AppState.register(
+    FirebaseService.register(
       email: email,
       password: password,
       name: name,
       role: _role,
-    );
-
-    if (!mounted) return;
-    setState(() => _loading = false);
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            role == 'patient' ? const PatientHomeScreen() : const CaregiverHomeScreen(),
-      ),
-      (route) => false,
-    );
+    ).then((role) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              role == 'patient' ? const PatientHomeScreen() : const CaregiverHomeScreen(),
+        ),
+        (route) => false,
+      );
+    }).catchError((e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e is Exception ? e.toString().replaceFirst('Exception: ', '') : 'Registration failed. Please try again.'),
+          backgroundColor: Colors.redAccent.shade200,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    });
   }
 
   bool _validateForm({

@@ -2,6 +2,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/firebase_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/primary_icon_button.dart';
 import 'manage_patients_profile_screen.dart';
@@ -16,55 +18,75 @@ class ManagePatientsScreen extends StatefulWidget {
 class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
   void _showAddDialog() {
     final colors = context.appColors;
-    final nameController = TextEditingController();
-    final notesController = TextEditingController();
+    final emailController = TextEditingController();
+    String? errorText;
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.background,
-        title: const Text('Add care recipient'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: _inputDecoration('Name', colors),
-              textCapitalization: TextCapitalization.words,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: colors.background,
+          title: const Text('Add care recipient'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Ask your care recipient to create an account first, then enter their email below.',
+                style: TextStyle(fontSize: 13, color: Colors.black54),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emailController,
+                decoration: _inputDecoration('Patient email', colors).copyWith(
+                  errorText: errorText,
+                ),
+                keyboardType: TextInputType.emailAddress,
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: TextStyle(color: colors.teal)),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: notesController,
-              decoration: _inputDecoration('Notes (optional)', colors),
-              maxLines: 2,
+            FilledButton(
+              onPressed: () {
+                final email = emailController.text.trim();
+                if (email.isEmpty) return;
+                final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                Navigator.pop(ctx);
+                FirebaseService.linkPatient(
+                  patientEmail: email,
+                  caregiverId: uid,
+                ).then((profile) {
+                  AppState.patients.add(profile);
+                  AppState.patientUsageStats[profile.id] = PatientUsageStats();
+                  AppState.patientMessages[profile.id] = AppState.defaultMessagesMap();
+                  if (mounted) setState(() {});
+                }).catchError((e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString().replaceFirst('Exception: ', '')),
+                      backgroundColor: Colors.redAccent.shade200,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
+                });
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: colors.teal,
+                foregroundColor: colors.surface,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+              ),
+              child: const Text('Link'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: colors.teal)),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isEmpty) return;
-              AppState.addPatient(
-                name: name,
-                notes: notesController.text.trim(),
-              );
-              Navigator.pop(ctx);
-              setState(() {});
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: colors.teal,
-              foregroundColor: colors.surface,
-              elevation: 0,
-              shadowColor: Colors.transparent,
-            ),
-            child: const Text('Add'),
-          ),
-        ],
       ),
     );
   }

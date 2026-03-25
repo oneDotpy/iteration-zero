@@ -5,6 +5,7 @@ import '../widgets/primary_cta_button.dart';
 import '../widgets/primary_icon_button.dart';
 import '../theme/app_colors.dart';
 import '../app_state.dart';
+import '../services/firebase_service.dart';
 import 'patient_activity_screen.dart';
 
 class ManagePatientsProfileScreen extends StatefulWidget {
@@ -65,6 +66,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 		final file = await _picker.pickImage(source: source, imageQuality: 85);
 		if (file != null && mounted) {
 			setState(() => widget.patient.imagePath = file.path);
+			FirebaseService.updatePatient(widget.patient);
 		}
 	}
 
@@ -100,6 +102,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 						TextButton(
 							onPressed: () {
 								AppState.removePatient(patient.id);
+							FirebaseService.removePatient(patient.id);
 								Navigator.pop(ctx);
 								if (mounted) Navigator.pop(context, true);
 							},
@@ -118,6 +121,7 @@ class _ManagePatientsProfileScreenState extends State<ManagePatientsProfileScree
 							if (name.isEmpty) return;
 							patient.name = name;
 							patient.notes = notesController.text.trim();
+							FirebaseService.updatePatient(patient);
 							Navigator.pop(ctx);
 							setState(() {});
 						},

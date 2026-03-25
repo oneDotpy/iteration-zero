@@ -1,6 +1,8 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'app_state.dart';
 import 'screens/welcome_screen.dart';
@@ -14,6 +16,7 @@ final settingsNotifier = ValueNotifier<int>(0);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await WidgetService.init();
   AppSettings.loadForCurrentAccount();
   runApp(const UnscriptedApp());

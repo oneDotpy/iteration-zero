@@ -202,7 +202,8 @@ class AppState {
   static const _demoCaregiverName = 'Alex';
   static const _demoPatientEmail = 'patient@gmail.com';
   static const _demoPatientPassword = 'patient';
-  static const _demoPatientName = 'Margaret';
+  // Public so FirebaseService can reference it when seeding a new account.
+  static const demoPatientName = 'Margaret';
 
   static final List<_UserAccount> _accounts = [
     _UserAccount(
@@ -214,7 +215,7 @@ class AppState {
     _UserAccount(
       email: _demoPatientEmail,
       password: _demoPatientPassword,
-      name: _demoPatientName,
+      name: demoPatientName,
       role: 'patient',
     ),
   ];
@@ -226,17 +227,17 @@ class AppState {
   static String get caregiverName =>
       loggedInName.isNotEmpty ? loggedInName : _demoCaregiverName;
   static String get patientName =>
-      loggedInName.isNotEmpty ? loggedInName : _demoPatientName;
+      loggedInName.isNotEmpty ? loggedInName : demoPatientName;
 
-  static const defaultPatientId = 'patient_default';
+  static String defaultPatientId = 'patient_default';
 
-  static List<PatientProfile> patients = [
-    PatientProfile(id: defaultPatientId, name: _demoPatientName),
-  ];
+  static void overrideDefaultPatientId(String id) {
+    defaultPatientId = id;
+  }
 
-  static Map<String, PatientUsageStats> patientUsageStats = {
-    defaultPatientId: PatientUsageStats(),
-  };
+  static List<PatientProfile> patients = [];
+
+  static Map<String, PatientUsageStats> patientUsageStats = {};
 
   static PatientUsageStats getUsageFor(String patientId) =>
       patientUsageStats.putIfAbsent(patientId, PatientUsageStats.new);
@@ -247,11 +248,10 @@ class AppState {
     stats.checkThreshold(action);
   }
 
-  static Map<String, Map<int, List<ReassuranceData>>> patientMessages = {
-    defaultPatientId: _defaultMessages(),
-  };
+  static Map<String, Map<int, List<ReassuranceData>>> patientMessages = {};
 
-  static Map<int, List<ReassuranceData>> _defaultMessages() => {
+  // Public so FirebaseService can seed new patients with default messages.
+  static Map<int, List<ReassuranceData>> defaultMessagesMap() => {
     0: [
       ReassuranceData(
         headline: "You don't need to worry about that right now.",
@@ -279,7 +279,7 @@ class AppState {
   };
 
   static Map<int, List<ReassuranceData>> getMessagesFor(String patientId) =>
-      patientMessages[patientId] ?? _defaultMessages();
+      patientMessages[patientId] ?? defaultMessagesMap();
 
   static bool hasVoiceRecordingFor(String patientId) {
     final messages = patientMessages[patientId];
@@ -354,7 +354,7 @@ class AppState {
   static void addPatient({required String name, String notes = ''}) {
     final id = 'patient_${DateTime.now().millisecondsSinceEpoch}';
     patients.add(PatientProfile(id: id, name: name, notes: notes));
-    patientMessages[id] = _defaultMessages();
+    patientMessages[id] = defaultMessagesMap();
     patientUsageStats[id] = PatientUsageStats();
   }
 
@@ -390,13 +390,13 @@ class AppState {
     bool isVideo = false,
   }) {
     for (final pid in patientIds) {
-      patientMessages.putIfAbsent(pid, _defaultMessages);
+      patientMessages.putIfAbsent(pid, defaultMessagesMap);
       for (final i in situationIndexes) {
         final existingList =
             patientMessages[pid]!.putIfAbsent(i, () => <ReassuranceData>[]);
         final trimmedHeadline = headline.trim();
         final trimmedSubtext = subtext.trim();
-        final defaultSubtext = _defaultMessages()[i]?.first.subtext ?? '';
+        final defaultSubtext = defaultMessagesMap()[i]?.first.subtext ?? '';
         existingList.add(
           ReassuranceData(
             headline: trimmedHeadline,

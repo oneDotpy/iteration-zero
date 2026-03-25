@@ -1,6 +1,7 @@
 // lib/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import '../services/firebase_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/soft_text_field.dart';
 import '../widgets/primary_cta_button.dart';
@@ -40,12 +41,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = '';
     });
 
-    Future.delayed(const Duration(milliseconds: 600), () {
+    FirebaseService.login(
+      _emailController.text,
+      _passwordController.text,
+    ).then((role) {
       if (!mounted) return;
-      final role = AppState.login(
-        _emailController.text,
-        _passwordController.text,
-      );
       setState(() => _loading = false);
 
       if (role == null) {
@@ -69,6 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
         AppSettings.loadForCurrentAccount();
         themeNotifier.value = AppSettings.themeMode;
         settingsNotifier.value++;
+      });
+    }).catchError((_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _errorMessage = 'Something went wrong. Please try again.';
       });
     });
   }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "485112814779",
+    "project_id": "iter-zero",
+    "storage_bucket": "iter-zero.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:485112814779:android:eb7c0581629f7058765d9e",
+        "android_client_info": {
+          "package_name": "com.csc318.connection_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqT_AcTtS7KT0M22NjIeb2cEjMNx3Q6_Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

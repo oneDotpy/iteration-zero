@@ -12,6 +12,7 @@ import 'patient_reassurance_screen.dart';
 import 'breather_intro_screen.dart';
 import 'settings_screen.dart';
 import '../services/widget_service.dart';
+import '../services/firebase_service.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -27,16 +28,16 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   @override
   void initState() {
     super.initState();
-    final patientId = AppState.patients.first.id;
+    final patientId = AppState.patients.isNotEmpty ? AppState.patients.first.id : AppState.defaultPatientId;
     AppState.logPatientEvent(kEventAppOpen, patientId: patientId);
+    FirebaseService.logEvent(patientId, kEventAppOpen);
     WidgetService.updateCaregiverWidget();
   }
 
   void _logEvent(String action) {
-    final patientId = AppState.patients.first.id;
-    // logPatientEvent now internally checks thresholds and stores
-    // any pending alerts for the caregiver — nothing shown to patient.
+    final patientId = AppState.patients.isNotEmpty ? AppState.patients.first.id : AppState.defaultPatientId;
     AppState.logPatientEvent(action, patientId: patientId);
+    FirebaseService.logEvent(patientId, action);
     WidgetService.updateCaregiverWidget();
   }
 
