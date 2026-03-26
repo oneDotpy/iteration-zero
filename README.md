@@ -10,6 +10,19 @@ A Flutter prototype for a caregiver support app, built for CSC318. The app has t
 
 ---
 
+## Research-driven design
+
+This app is built on user research with **caregivers and care recipients** affected by cognitive decline. Key insights informed our design:
+
+- **Care recipients need reassurance, not correction** — personalized messages from trusted caregivers provide comfort during moments of confusion
+- **Caregivers need quick access to guidance** — evidence-based information on common behaviors (sundowning, wandering, repetitive questions)
+- **Moments of confusion are emotional** — breathing exercises and familiar voices help calm and ground care recipients
+- **Accessibility is essential** — high contrast modes, text scaling, and reduced motion options support users with visual and sensory needs
+
+The prototype prioritizes **connection and dignity** over surveillance or control.
+
+---
+
 ## What it does
 
 ### Caregiver side
