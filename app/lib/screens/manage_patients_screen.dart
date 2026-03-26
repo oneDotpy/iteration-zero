@@ -56,7 +56,6 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                 final email = emailController.text.trim();
                 if (email.isEmpty) return;
                 final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-                Navigator.pop(ctx);
                 FirebaseService.linkPatient(
                   patientEmail: email,
                   caregiverId: uid,
@@ -64,17 +63,15 @@ class _ManagePatientsScreenState extends State<ManagePatientsScreen> {
                   AppState.patients.add(profile);
                   AppState.patientUsageStats[profile.id] = PatientUsageStats();
                   AppState.patientMessages[profile.id] = AppState.defaultMessagesMap();
-                  if (mounted) setState(() {});
+                  if (mounted) {
+                    Navigator.pop(ctx);
+                    setState(() {});
+                  }
                 }).catchError((e) {
                   if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(e.toString().replaceFirst('Exception: ', '')),
-                      backgroundColor: Colors.redAccent.shade200,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  );
+                  setDialogState(() {
+                    errorText = e.toString().replaceFirst('Exception: ', '');
+                  });
                 });
               },
               style: FilledButton.styleFrom(

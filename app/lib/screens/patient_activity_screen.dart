@@ -106,6 +106,7 @@ class _PatientActivityScreenState extends State<PatientActivityScreen> {
             FilledButton(
               onPressed: () {
                 setState(() => _stats.alertThresholds[action.key] = value);
+                FirebaseService.updateAlertThreshold(widget.patient.id, action.key, value);
                 Navigator.pop(ctx);
               },
               style: FilledButton.styleFrom(

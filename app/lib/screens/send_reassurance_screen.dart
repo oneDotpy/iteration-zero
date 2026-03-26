@@ -120,13 +120,13 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
     }
     if (_recordingPath == null) return;
     setState(() => _isPreviewPlaying = true);
-    await _player.play(DeviceFileSource(_recordingPath!));
+    await _player.play(DeviceFileSource(_recordingPath!, mimeType: 'audio/mp4'));
     _player.onPlayerComplete.first.then((_) {
       if (mounted) setState(() => _isPreviewPlaying = false);
     });
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_selectedPatientIds.isEmpty) {
       setState(() {
         _validationMessage = 'Please select at least one care recipient.';
@@ -157,8 +157,15 @@ class _SendReassuranceScreenState extends State<SendReassuranceScreen> {
       recordingPath: _recordingPath,
       mediaPath: _mediaPath,
       isVideo: _isVideo,
-    );
-    WidgetService.updatePatientWidget();
+    ).then((_) {
+      WidgetService.updatePatientWidget();
+    }).catchError((e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    });
     _recordingTimer?.cancel();
     _headlineController.clear();
     _subtextController.clear();

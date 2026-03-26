@@ -80,12 +80,18 @@ class PendingAlert {
   final int count;
   final DateTime firedAt;
   bool seenOnHome;
+  final String firestoreId;
+  final String patientId;
+  final String patientName;
 
   PendingAlert({
     required this.action,
     required this.count,
     required this.firedAt,
     this.seenOnHome = false,
+    this.firestoreId = '',
+    this.patientId = '',
+    this.patientName = '',
   });
 }
 
@@ -202,8 +208,7 @@ class AppState {
   static const _demoCaregiverName = 'Alex';
   static const _demoPatientEmail = 'patient@gmail.com';
   static const _demoPatientPassword = 'patient';
-  // Public so FirebaseService can reference it when seeding a new account.
-  static const demoPatientName = 'Margaret';
+  static const _demoPatientName = 'Margaret';
 
   static final List<_UserAccount> _accounts = [
     _UserAccount(
@@ -215,7 +220,7 @@ class AppState {
     _UserAccount(
       email: _demoPatientEmail,
       password: _demoPatientPassword,
-      name: demoPatientName,
+      name: _demoPatientName,
       role: 'patient',
     ),
   ];
@@ -227,17 +232,24 @@ class AppState {
   static String get caregiverName =>
       loggedInName.isNotEmpty ? loggedInName : _demoCaregiverName;
   static String get patientName =>
-      loggedInName.isNotEmpty ? loggedInName : demoPatientName;
+      loggedInName.isNotEmpty ? loggedInName : _demoPatientName;
 
-  static String defaultPatientId = 'patient_default';
+  static const String defaultPatientId = 'patient_default';
+  static String _activePatientId = defaultPatientId;
 
   static void overrideDefaultPatientId(String id) {
-    defaultPatientId = id;
+    _activePatientId = id;
   }
 
-  static List<PatientProfile> patients = [];
+  static String get activeDefaultPatientId => _activePatientId;
 
-  static Map<String, PatientUsageStats> patientUsageStats = {};
+  static List<PatientProfile> patients = [
+    PatientProfile(id: defaultPatientId, name: _demoPatientName),
+  ];
+
+  static Map<String, PatientUsageStats> patientUsageStats = {
+    defaultPatientId: PatientUsageStats(),
+  };
 
   static PatientUsageStats getUsageFor(String patientId) =>
       patientUsageStats.putIfAbsent(patientId, PatientUsageStats.new);
@@ -248,10 +260,11 @@ class AppState {
     stats.checkThreshold(action);
   }
 
-  static Map<String, Map<int, List<ReassuranceData>>> patientMessages = {};
+  static Map<String, Map<int, List<ReassuranceData>>> patientMessages = {
+    defaultPatientId: _defaultMessages(),
+  };
 
-  // Public so FirebaseService can seed new patients with default messages.
-  static Map<int, List<ReassuranceData>> defaultMessagesMap() => {
+  static Map<int, List<ReassuranceData>> _defaultMessages() => {
     0: [
       ReassuranceData(
         headline: "You don't need to worry about that right now.",
@@ -278,8 +291,10 @@ class AppState {
     ],
   };
 
+  static Map<int, List<ReassuranceData>> defaultMessagesMap() => _defaultMessages();
+
   static Map<int, List<ReassuranceData>> getMessagesFor(String patientId) =>
-      patientMessages[patientId] ?? defaultMessagesMap();
+      patientMessages[patientId] ?? _defaultMessages();
 
   static bool hasVoiceRecordingFor(String patientId) {
     final messages = patientMessages[patientId];
@@ -354,7 +369,7 @@ class AppState {
   static void addPatient({required String name, String notes = ''}) {
     final id = 'patient_${DateTime.now().millisecondsSinceEpoch}';
     patients.add(PatientProfile(id: id, name: name, notes: notes));
-    patientMessages[id] = defaultMessagesMap();
+    patientMessages[id] = _defaultMessages();
     patientUsageStats[id] = PatientUsageStats();
   }
 
@@ -390,13 +405,13 @@ class AppState {
     bool isVideo = false,
   }) {
     for (final pid in patientIds) {
-      patientMessages.putIfAbsent(pid, defaultMessagesMap);
+      patientMessages.putIfAbsent(pid, _defaultMessages);
       for (final i in situationIndexes) {
         final existingList =
             patientMessages[pid]!.putIfAbsent(i, () => <ReassuranceData>[]);
         final trimmedHeadline = headline.trim();
         final trimmedSubtext = subtext.trim();
-        final defaultSubtext = defaultMessagesMap()[i]?.first.subtext ?? '';
+        final defaultSubtext = _defaultMessages()[i]?.first.subtext ?? '';
         existingList.add(
           ReassuranceData(
             headline: trimmedHeadline,

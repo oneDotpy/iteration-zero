@@ -1,4 +1,5 @@
 // lib/screens/patient_home_screen.dart
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
@@ -24,19 +25,28 @@ class PatientHomeScreen extends StatefulWidget {
 class _PatientHomeScreenState extends State<PatientHomeScreen> {
   final Random _random = Random();
   int? _lastVoiceSituationIndex;
+  StreamSubscription<Map<int, List<ReassuranceData>>>? _reassuranceSub;
 
   @override
   void initState() {
     super.initState();
     final patientId = AppState.patients.isNotEmpty ? AppState.patients.first.id : AppState.defaultPatientId;
-    AppState.logPatientEvent(kEventAppOpen, patientId: patientId);
     FirebaseService.logEvent(patientId, kEventAppOpen);
     WidgetService.updateCaregiverWidget();
+    // Keep reassurance messages in sync so new messages from caregiver appear immediately
+    _reassuranceSub = FirebaseService.patientReassurancesStream(patientId).listen((msgs) {
+      if (mounted) setState(() => AppState.patientMessages[patientId] = msgs);
+    });
+  }
+
+  @override
+  void dispose() {
+    _reassuranceSub?.cancel();
+    super.dispose();
   }
 
   void _logEvent(String action) {
     final patientId = AppState.patients.isNotEmpty ? AppState.patients.first.id : AppState.defaultPatientId;
-    AppState.logPatientEvent(action, patientId: patientId);
     FirebaseService.logEvent(patientId, action);
     WidgetService.updateCaregiverWidget();
   }

@@ -131,7 +131,12 @@ class FirebaseService {
     if (patientDoc.exists) {
       final existingCaregiver = patientDoc.data()?['caregiverId'];
       if (existingCaregiver != null && existingCaregiver != caregiverId) {
-        throw Exception('This patient is already linked to another caregiver.');
+        // Check if the old caregiver still exists
+        final oldCaregiverDoc = await _db.collection('users').doc(existingCaregiver).get();
+        if (oldCaregiverDoc.exists) {
+          throw Exception('This patient is already linked to another caregiver.');
+        }
+        // Old caregiver no longer exists, so allow re-linking
       }
     }
 
@@ -187,6 +192,15 @@ class FirebaseService {
         mediaUrl = await _uploadFile(mediaPath, 'patients/$pid/media/${DateTime.now().millisecondsSinceEpoch}');
       }
 
+      // Store the last sent message on the patient doc for quick home-screen display
+      await _db.collection('patients').doc(pid).set({
+        'lastReassurance': {
+          'headline': headline.trim(),
+          'subtext': subtext.trim(),
+          'sentAt': FieldValue.serverTimestamp(),
+        },
+      }, SetOptions(merge: true));
+
       for (final i in situationIndexes) {
         await _db
             .collection('patients')
@@ -221,6 +235,10 @@ class FirebaseService {
   // ── Usage events ────────────────────────────────────────────────────────────
 
   static Future<void> logEvent(String patientId, String action) async {
+    // Log locally AND check threshold here — patient_home_screen must NOT call
+    // AppState.logPatientEvent separately or the _notifiedToday guard fires twice.
+    final stats = AppState.getUsageFor(patientId);
+    stats.log(action);
     await _db
         .collection('patients')
         .doc(patientId)
@@ -229,8 +247,6 @@ class FirebaseService {
       'action': action,
       'timestamp': FieldValue.serverTimestamp(),
     });
-    // Check threshold and notify caregiver
-    final stats = AppState.getUsageFor(patientId);
     final triggered = stats.checkThreshold(action);
     if (triggered != null) {
       await _sendThresholdNotification(patientId, action, stats.alertThresholds[action] ?? 5);
@@ -319,8 +335,7 @@ class FirebaseService {
 
   // ── Real-time streams ───────────────────────────────────────────────────────
 
-  /// Live stream of usage events for a patient. Updates whenever a new event
-  /// is written (e.g. patient taps a button on their device).
+  /// Live stream of usage events for a patient.
   static Stream<List<UsageEvent>> patientEventsStream(String patientId) {
     return _db
         .collection('patients')
@@ -337,11 +352,86 @@ class FirebaseService {
             }).toList());
   }
 
+  /// Live stream of all reassurances for a patient, grouped by situationIndex.
+  static Stream<Map<int, List<ReassuranceData>>> patientReassurancesStream(String patientId) {
+    return _db
+        .collection('patients')
+        .doc(patientId)
+        .collection('reassurances')
+        .snapshots()
+        .map((snap) {
+          final map = <int, List<ReassuranceData>>{};
+          for (final d in snap.docs) {
+            final data = d.data();
+            final idx = (data['situationIndex'] as int?) ?? 0;
+            map.putIfAbsent(idx, () => []);
+            map[idx]!.add(ReassuranceData(
+              headline: data['headline'] ?? '',
+              subtext: data['subtext'] ?? '',
+              hasRecording: data['hasRecording'] ?? false,
+              recordingPath: data['recordingUrl'],
+              mediaPath: data['mediaUrl'],
+              isVideo: data['isVideo'] ?? false,
+            ));
+          }
+          return map;
+        });
+  }
+
+  /// Live stream of last sent reassurance for a patient.
+  static Stream<ReassuranceData?> lastReassuranceStream(String patientId) {
+    return _db.collection('patients').doc(patientId).snapshots().map((snap) {
+      final data = snap.data();
+      final lastReassurance = data?['lastReassurance'];
+      if (lastReassurance == null) return null;
+      return ReassuranceData(
+        headline: lastReassurance['headline'] ?? '',
+        subtext: lastReassurance['subtext'] ?? '',
+        hasRecording: false,
+        recordingPath: null,
+        mediaPath: null,
+        isVideo: false,
+      );
+    });
+  }
+
+  /// Live stream of threshold alerts (from /notifications) for a caregiver's patients.
+  static Stream<List<PendingAlert>> caregiverAlertsStream(List<String> patientIds) {
+    if (patientIds.isEmpty) return Stream.value([]);
+    // Firestore 'whereIn' supports up to 30 items
+    final ids = patientIds.take(30).toList();
+    return _db
+        .collection('notifications')
+        .where('patientId', whereIn: ids)
+        .where('seen', isEqualTo: false)
+        .orderBy('firedAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map((d) {
+              final data = d.data();
+              return PendingAlert(
+                action: data['action'] ?? '',
+                count: (data['threshold'] as num?)?.toInt() ?? 0,
+                firedAt: (data['firedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+                firestoreId: d.id,
+                patientId: data['patientId'] ?? '',
+                patientName: data['patientName'] ?? '',
+              );
+            }).toList());
+  }
+
+  static Future<void> markAlertSeen(String firestoreId) async {
+    await _db.collection('notifications').doc(firestoreId).update({'seen': true});
+  }
+
   // ── Storage ─────────────────────────────────────────────────────────────────
 
   static Future<String> _uploadFile(String localPath, String storagePath) async {
+    // Already a remote URL — nothing to upload.
+    if (localPath.startsWith('http')) return localPath;
+    final file = File(localPath);
+    if (!await file.exists()) throw Exception('File not found: $localPath');
     final ref = _storage.ref(storagePath);
-    await ref.putFile(File(localPath));
+    await ref.putFile(file);
     return await ref.getDownloadURL();
   }
 

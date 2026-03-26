@@ -1,4 +1,5 @@
 // lib/screens/caregiver_home_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../theme/app_colors.dart';
@@ -12,12 +13,7 @@ import 'manage_patients_screen.dart';
 import 'patient_activity_screen.dart';
 import 'settings_screen.dart';
 import '../main.dart';
-
-class _PatientAlert {
-  final PatientProfile patient;
-  final PendingAlert alert;
-  const _PatientAlert({required this.patient, required this.alert});
-}
+import '../services/firebase_service.dart';
 
 class CaregiverHomeScreen extends StatefulWidget {
   const CaregiverHomeScreen({super.key});
@@ -34,31 +30,59 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     kEventAppOpen: 'App opened',
   };
 
-  List<_PatientAlert> _allPendingAlerts() {
-    final result = <_PatientAlert>[];
-    for (final patient in AppState.patients) {
-      final stats = AppState.getUsageFor(patient.id);
-      for (final alert in stats.unseenAlerts) {
-        result.add(_PatientAlert(patient: patient, alert: alert));
+  List<PendingAlert> _liveAlerts = [];
+  ReassuranceData? _recentMessage;
+  StreamSubscription<List<PendingAlert>>? _alertsSub;
+  StreamSubscription<Map<int, List<ReassuranceData>>>? _reassuranceSub;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _subscribeStreams();
+    });
+  }
+
+  void _subscribeStreams() {
+    _alertsSub?.cancel();
+    _reassuranceSub?.cancel();
+
+    final patientIds = AppState.patients.map((p) => p.id).toList();
+    if (patientIds.isEmpty) return;
+
+    _alertsSub = FirebaseService.caregiverAlertsStream(patientIds).listen((alerts) {
+      if (mounted) setState(() => _liveAlerts = alerts);
+    });
+
+    _reassuranceSub = FirebaseService.patientReassurancesStream(patientIds.first).listen((msgs) {
+      if (!mounted) return;
+      AppState.patientMessages[patientIds.first] = msgs;
+      // Get the most recent message from any situation
+      ReassuranceData? recent;
+      for (final list in msgs.values) {
+        if (list.isNotEmpty) {
+          recent = list.last;
+          break;
+        }
       }
-    }
-    result.sort((a, b) => b.alert.firedAt.compareTo(a.alert.firedAt));
-    return result;
+      setState(() => _recentMessage = recent);
+    });
+  }
+
+  @override
+  void dispose() {
+    _alertsSub?.cancel();
+    _reassuranceSub?.cancel();
+    super.dispose();
   }
 
   void _dismissAllAlerts() {
-    for (final patient in AppState.patients) {
-      AppState.getUsageFor(patient.id).dismissFromHome();
+    for (final alert in _liveAlerts) {
+      if (alert.firestoreId.isNotEmpty) {
+        FirebaseService.markAlertSeen(alert.firestoreId);
+      }
     }
-    setState(() {});
-  }
-
-  String _timeLabel(DateTime firedAt) {
-    final diff = DateTime.now().difference(firedAt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return 'Earlier';
+    setState(() => _liveAlerts = []);
   }
 
   @override
@@ -68,18 +92,8 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
       builder: (context, _, __) {
         final colors = context.appColors;
 
-        final firstPatient =
-            AppState.patients.isNotEmpty ? AppState.patients.first : null;
-
-        ReassuranceData? recentMessage;
-        if (firstPatient != null) {
-          final list = AppState.getMessagesFor(firstPatient.id)[0];
-          if (list != null && list.isNotEmpty) {
-            recentMessage = list.last;
-          }
-        }
-
-        final pendingAlerts = _allPendingAlerts();
+        final pendingAlerts = _liveAlerts;
+        final recentMessage = _recentMessage;
 
         return Scaffold(
           backgroundColor: colors.background,
@@ -182,16 +196,15 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
                                               children: List<Widget>.generate(
                                                 pendingAlerts.length,
                                                 (i) {
-                                                  final entry = pendingAlerts[i];
-                                                  final label = _actionLabels[entry.alert.action] ??
-                                                      entry.alert.action;
+                                                  final alert = pendingAlerts[i];
+                                                  final label = _actionLabels[alert.action] ?? alert.action;
                                                   return Padding(
                                                     padding: EdgeInsets.only(
                                                         bottom: i < pendingAlerts.length - 1 ? 6 : 0),
                                                     child: Text.rich(
                                                       TextSpan(children: [
                                                         TextSpan(
-                                                          text: entry.patient.name,
+                                                          text: alert.patientName,
                                                           style: TextStyle(
                                                               fontWeight: FontWeight.w600,
                                                               color: colors.textHigh,
@@ -199,7 +212,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
                                                               fontStyle: FontStyle.italic),
                                                         ),
                                                         TextSpan(
-                                                          text: ' used "$label" ${entry.alert.count}+ times',
+                                                          text: ' used "$label" ${alert.count}+ times',
                                                           style: TextStyle(
                                                               color: colors.textHigh,
                                                               fontSize: 14,
@@ -239,7 +252,11 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
                                                   ),
                                                   child: FilledButton(
                                                     onPressed: () {
-                                                      final patient = pendingAlerts.first.patient;
+                                                      final patientId = pendingAlerts.first.patientId;
+                                                      final patient = AppState.patients.firstWhere(
+                                                        (p) => p.id == patientId,
+                                                        orElse: () => AppState.patients.first,
+                                                      );
                                                       Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
