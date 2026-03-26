@@ -4,6 +4,10 @@
 
 A Flutter prototype for a caregiver support app, built for CSC318. The app has two sides: one for **caregivers** managing their loved ones, and one for **care recipient** seeking comfort and reassurance.
 
+**Two versions available:**
+- **`app/`** — Demo version with in-memory state (no backend)
+- **`app_db/`** — Full version with Firebase backend, real-time updates, and persistent storage
+
 ---
 
 ## What it does
@@ -42,36 +46,44 @@ You can also create new accounts via **Create an account** — they are saved in
 ```
 iteration-zero/
 ├── Paper Prototype/        # Original paper prototype PNGs
-└── app/                    # Flutter project
-    └── lib/
-        ├── main.dart                   # App entry; themeNotifier + settingsNotifier
-        ├── app_state.dart              # All static app state, auth & AppSettings
-        ├── screens/
-        │   ├── welcome_screen.dart
-        │   ├── login_screen.dart
-        │   ├── create_account_screen.dart
-        │   ├── caregiver_home_screen.dart
-        │   ├── patient_home_screen.dart
-        │   ├── guidance_topic_screen.dart
-        │   ├── guidance_result_screen.dart
-        │   ├── guidance_done_screen.dart
-        │   ├── send_reassurance_screen.dart
-        |   ├── send_reassurance_done_screen.dart
-        │   ├── manage_patients_screen.dart
-        │   ├── breather_intro_screen.dart
-        │   ├── breathing_screen.dart
-        │   ├── breathing_done_screen.dart
-        │   ├── patient_situation_screen.dart
-        │   └── patient_reassurance_screen.dart
-        ├── theme/
-        │   ├── app_colors.dart         # Light / dark / high-contrast palettes
-        │   └── app_theme.dart          # ThemeData builders
-        └── widgets/
-            ├── animated_waveform.dart  # Animated bar waveform (respects reduced motion)
-            ├── breathing_circle.dart   # Animated breathing circle widget
-            ├── soft_card.dart
-            ├── soft_text_field.dart
-            └── voice_input_bar.dart    # Tappable voice input simulation
+├── app/                    # Flutter project (demo, no backend)
+│   └── lib/
+│       ├── main.dart                   # App entry; themeNotifier + settingsNotifier
+│       ├── app_state.dart              # All static app state, auth & AppSettings
+│       ├── screens/
+│       │   ├── welcome_screen.dart
+│       │   ├── login_screen.dart
+│       │   ├── create_account_screen.dart
+│       │   ├── caregiver_home_screen.dart
+│       │   ├── patient_home_screen.dart
+│       │   ├── guidance_topic_screen.dart
+│       │   ├── guidance_result_screen.dart
+│       │   ├── guidance_done_screen.dart
+│       │   ├── send_reassurance_screen.dart
+│       │   ├── send_reassurance_done_screen.dart
+│       │   ├── manage_patients_screen.dart
+│       │   ├── breather_intro_screen.dart
+│       │   ├── breathing_screen.dart
+│       │   ├── breathing_done_screen.dart
+│       │   ├── patient_situation_screen.dart
+│       │   └── patient_reassurance_screen.dart
+│       ├── theme/
+│       │   ├── app_colors.dart         # Light / dark / high-contrast palettes
+│       │   └── app_theme.dart          # ThemeData builders
+│       └── widgets/
+│           ├── animated_waveform.dart  # Animated bar waveform (respects reduced motion)
+│           ├── breathing_circle.dart   # Animated breathing circle widget
+│           ├── soft_card.dart
+│           ├── soft_text_field.dart
+│           └── voice_input_bar.dart    # Tappable voice input simulation
+├── app_db/                 # Flutter project (full version with Firebase)
+│   ├── lib/                # Same structure as app/ plus:
+│   │   └── services/
+│   │       ├── firebase_service.dart   # Firebase operations
+│   │       └── widget_service.dart     # Platform-specific features
+│   ├── functions/          # Cloud Functions for FCM notifications
+│   ├── firebase.json       # Firebase configuration
+│   └── .firebaserc         # Firebase project reference
 ```
 
 ---
@@ -84,17 +96,26 @@ iteration-zero/
 - Dart 3.11+
 - For iOS Simulator: Xcode installed and configured
 - For Android: Android Studio + an emulator or physical device
+- For **app_db** only: Firebase CLI (`npm install -g firebase-tools`)
 
 Verify your setup:
 ```bash
 flutter doctor
 ```
 
-### Install dependencies
+### Choose your version
 
+**Demo (no backend):**
 ```bash
 cd app
 flutter pub get
+```
+
+**Full version with Firebase:**
+```bash
+cd app_db
+flutter pub get
+firebase login
 ```
 
 ### Run options
@@ -133,7 +154,16 @@ Output is in `app/build/web/` — open `index.html` in any browser.
 
 ## Notes
 
-- This is a **prototype** — there is no real backend or database. All state lives in memory and resets when the app is closed.
-- Voice recording and playback are **simulated** — no audio is actually captured or stored.
+### app/ (demo version)
+- All state lives in memory and resets when the app is closed.
+- Voice recording and playback are simulated — no audio is captured or stored.
+
+### app_db/ (Firebase version)
+- **Persistent storage** — all data is saved to Firebase Firestore and syncs across devices.
+- **Real-time updates** — reassurance messages and alerts update instantly for both caregiver and care recipient.
+- **Push notifications** — caregivers receive notifications via FCM when care recipients exceed usage thresholds.
+- **Cloud Functions** — automatic notification delivery when alerts are triggered.
+
+### Both versions
 - The breathing exercise is limited to **3 cycles** by design.
 - **Accessibility settings** apply immediately app-wide via `settingsNotifier` (a `ValueNotifier<int>`) that triggers a full widget tree rebuild. Text scaling uses Flutter's `MediaQuery.textScaler`; high contrast swaps the entire `AppColors` palette; reduced motion disables animated waveforms and page transitions and replaces the breathing circle animation with a countdown.
