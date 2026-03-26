@@ -54,6 +54,23 @@ You can also create new accounts via **Create an account** — they are saved in
 
 ---
 
+## Tech stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Flutter 3.41+, Dart 3.11+ |
+| **State management** | ValueNotifier, Provider pattern |
+| **Backend** (app_db only) | Firebase Firestore, Firebase Storage |
+| **Authentication** | Firebase Authentication |
+| **Push notifications** | Firebase Cloud Messaging (FCM) |
+| **Cloud functions** | Firebase Cloud Functions (Node.js) |
+| **Audio** | audioplayers plugin |
+| **Video** | video_player plugin |
+| **Image** | image_picker plugin |
+| **Accessibility** | Flutter's built-in MediaQuery APIs, custom animation controls |
+
+---
+
 ## Project structure
 
 ```
