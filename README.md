@@ -72,3 +72,8 @@ In VS Code:
 ```bash
 flutter run
 ```
+
+---
+
+### Tools & Development Notes
+AI coding assistants (ChatGPT, GitHub Copilot, and Claude) were used during development, primarily for generating setup code, debugging Flutter-specific issues, and assisting with parts of the UI implementation. All design decisions, app structure, interaction logic, user research, and feedback-driven design iterations were our own.
